@@ -1,0 +1,4 @@
+[0m[[0m[31merror[0m] [0m[0m/home/imzhwk/competitions/cloud-compu-2017-cn/ccc-skills-2/src/main/scala/Main.scala:25:25: value partitionBy is not a member of org.apache.spark.rdd.RDD[String][0m
+[0m[[0m[31merror[0m] [0m[0m            readedlines.partitionBy(new AttribHashPartitioner(INPUT_PARTS,pubattribs))[0m
+[0m[[0m[31merror[0m] [0m[0m                        ^[0m
+[0m[[0m[31merror[0m] [0m[0mone error found[0m
