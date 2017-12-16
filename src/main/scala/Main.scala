@@ -21,7 +21,7 @@ object Main{
         val readedlines = sc.textFile(input_file,INPUT_PARTS)
         val splitedlines = readedlines.map(str => str.split(","))
         val totattribs = countAttribs(readedlines.first)
-        val possibcombs = genCombinations(totattribs)
+        val possibcombs = Combinator.genCombinations(totattribs)
         for(pubattribs <- possibcombs){
             val lines = splitedlines.map(arr => (hashWithPublicAttribs(arr,pubattribs),arr)).partitionBy(new MyHashPartitioner(INPUT_PARTS))
             
@@ -30,34 +30,6 @@ object Main{
 
     def countAttribs(input:String):Int = {
         return input.split(",").length+1
-    }
-
-    def genCombinations(attribcnt:Int):List[List[Int]]={
-        val attribidarr = 0 until attribcnt;
-        var topbuffer =new ListBuffer[List[Int]]()
-        for(currcnt <- 1 until attribcnt){
-            var bottombuffer = new ListBuffer[Int]()
-            for(i <- 0 until currcnt){
-                bottombuffer += i
-            }
-            topbuffer += bottombuffer.toList
-            while(bottombuffer(0)<attribcnt-currcnt){ // EX condition: the largest r-comb in dict order
-                breakable{
-                    for(operpos <- (currcnt-1).to(0,-1)){
-                        // find last element that satisfy:NOT REACH ITS MAXIMUM
-                        if(bottombuffer(operpos)<attribcnt-currcnt+operpos){
-                            bottombuffer(operpos) = bottombuffer(operpos)+1
-                            for(updatepos <- operpos+1 until currcnt){
-                                bottombuffer(updatepos) = bottombuffer(operpos)+updatepos-operpos
-                            }
-                            topbuffer+=bottombuffer.toList
-                            break
-                        }
-                    }
-                }
-            }
-        }
-        topbuffer.toList
     }
 
     def hashWithPublicAttribs(arr:Array[String],pubattrid:List[Int]):Int={

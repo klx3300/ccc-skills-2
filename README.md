@@ -30,3 +30,17 @@ At Driver
 
 
 
+
+## Implementation Details Notes
+
+
+
+### Generate Combinations
+
+- Use the Dict-Order Generator
+
+
+
+### Adjacency List
+
+- The key in secondary map is [<...lhs...>,rhs] e.g. lhs = 1,3 rhs = 2 then key=[1,3,2].
