@@ -14,6 +14,25 @@ class ReversedSearchSpaceTree(val attribcnt:Int){
     init()
     def update(lhs:List[Int],rhs:Int):Unit={
         // append everything into the vertices map
-
+        val allcombs = Combinator.genCombinations(lhs)
+        // first, cancel the LHS one
+        val buffer = ListBuffer[Int]()
+        buffer.appendAll(lhs)
+        buffer.append(rhs)
+        vertices(lhs)(buffer.toList) = true
+        // second, cancel the all combs one
+        for(x <- allcombs){
+            val abuffer = ListBuffer[Int]()
+            abuffer.appendAll(x)
+            abuffer.append(rhs)
+            vertices(x)(abuffer.toList) = true
+        }
+    }
+    def merge(revtree:ReversedSearchSpaceTree):Unit={
+        for((lhs,rhsmap) <- revtree.vertices){
+            for((dest,iscorr) <- rhsmap){
+                vertices(lhs)(dest) = iscorr
+            }
+        }
     }
 }

@@ -33,5 +33,11 @@ class SearchSpaceTree(val attribcnt:Int){
         }
     }
     init()
-    
+    def merge(revtree:ReversedSearchSpaceTree):Unit={
+        for((lhs,rhsmap) <- revtree.vertices){
+            for((rhs,isboomed) <- rhsmap){
+                vertices(lhs)(rhs) = !isboomed
+            }
+        }
+    }
 }
