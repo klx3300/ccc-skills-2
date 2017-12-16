@@ -44,3 +44,16 @@ At Driver
 ### Adjacency List
 
 - The key in secondary map is [<...lhs...>,rhs] e.g. lhs = 1,3 rhs = 2 then key=[1,3,2].
+- Aggregation depends on the specification above, or will cause repetition in secondary maps
+
+
+
+### Validate FDs
+
+- Use the equivalence counts method described in paper
+
+
+
+### Equivalence Counts
+
+- Only storages the counts, due to only needs the counts in paper.

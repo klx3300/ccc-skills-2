@@ -20,12 +20,25 @@ object Main{
         // map input lines to its effective attribs
         val readedlines = sc.textFile(input_file,INPUT_PARTS)
         val splitedlines = readedlines.map(str => str.split(","))
+        println("Generating possible attributes..")
         val totattribs = countAttribs(readedlines.first)
         val possibcombs = Combinator.genCombinations(totattribs)
+        println("Generating search space tree..")
+        val space = new SearchSpaceTree(totattribs)
         for(pubattribs <- possibcombs){
+            print("Validating public attribute ")
+            println(pubattribs.toString)
+            val broadSpace = sc.broadcast(space)
             val lines = splitedlines.map(arr => (hashWithPublicAttribs(arr,pubattribs),arr)).partitionBy(new MyHashPartitioner(INPUT_PARTS))
-            
+            val mapped = lines.mapPartitions(x => List[ReversedSearchSpaceTree](Validator.validatePartition(x.toList.map(x => x._2),broadSpace)).iterator)
+            val result = mapped.reduce((x,y) => {x.merge(y);x})
+            space.merge(result)
+            broadSpace.unpersist()
         }
+        println("Generating output..")
+        val outputstrs = IOController.FDstoString(space.toFDs)
+        println("All output is:")
+        for(x <- outputstrs) println(x)
     }
 
     def countAttribs(input:String):Int = {

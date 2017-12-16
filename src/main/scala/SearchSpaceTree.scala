@@ -40,4 +40,14 @@ class SearchSpaceTree(val attribcnt:Int){
             }
         }
     }
+    def toFDs():scala.collection.mutable.Map[List[Int],ListBuffer[Int]]={ // not shrinked yet
+        val fds = scala.collection.mutable.Map[List[Int],ListBuffer[Int]]()
+        for((lhs,rhsmap) <- vertices){
+            fds(lhs) = ListBuffer[Int]()
+            for((rhs,iscorr) <- rhsmap){
+                if(iscorr) fds(lhs)+=rhs(rhs.length-1)
+            }
+        }
+        fds
+    }
 }
