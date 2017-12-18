@@ -9,7 +9,9 @@ object Validator{
             for((rhs,canvalid) <- possibrhs){
                 val failed = revtree.vertices(lhs).getOrElse(rhs,false)
                 if(canvalid==true && failed == false){
-                    if(Equivalencer.getEquivalenceCounts(lhs,dataset) != Equivalencer.getEquivalenceCounts(rhs,dataset)){
+                    val lhsequvcnt = Equivalencer.getEquivalenceCounts(lhs,dataset)
+                    val rhsequvcnt = Equivalencer.getEquivalenceCounts(rhs,dataset)
+                    if(lhsequvcnt != rhsequvcnt){
                         revtree.update(lhs,rhs(rhs.length-1))
                     }
                 }

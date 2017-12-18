@@ -9,9 +9,14 @@ object Equivalencer{
         for(x <- dataset){
             buffer = ListBuffer[String]()
             for(y <- attribs){
+                if( y >= x.length){
+                    printf("Invalid Access detected: %d (LEN %d)\n",y,x.length)
+                    printf(" - Attribs is ")
+                    println(attribs.toString)
+                }
                 buffer += x(y)
             }
-            counter(buffer.toList) = counter(buffer.toList) + 1
+            counter(buffer.toList) = 1
         }
         counter.size
     }

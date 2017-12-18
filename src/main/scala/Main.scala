@@ -19,6 +19,7 @@ object Main{
         val output_file = output_folder + "/my_bots_200_10_result.txt"
         // map input lines to its effective attribs
         val readedlines = sc.textFile(input_file,INPUT_PARTS)
+        val reinforcedlines = readedlines.map(str => str.replaceAll(",,",",ZHWK_INVAL_ATTRIB,"))
         val splitedlines = readedlines.map(str => str.split(","))
         println("Generating possible attributes..")
         val totattribs = countAttribs(readedlines.first)
@@ -27,12 +28,21 @@ object Main{
         val space = new SearchSpaceTree(totattribs)
         for(pubattribs <- possibcombs){
             print("Validating public attribute ")
-            println(pubattribs.toString)
+            print(pubattribs.toString)
+            println("..")
+            println(" - Broadcasting search space tree..")
             val broadSpace = sc.broadcast(space)
-            val lines = splitedlines.map(arr => (hashWithPublicAttribs(arr,pubattribs),arr)).partitionBy(new MyHashPartitioner(INPUT_PARTS))
+            println(" - Starting preparation of repartitioning..")
+            val linespre = splitedlines.map(arr => (hashWithPublicAttribs(arr,pubattribs),arr))
+            println(" - Starting repartitioning..")
+            val lines = linespre.partitionBy(new MyHashPartitioner(INPUT_PARTS))
+            println(" - Starting Validator at each partition..")
             val mapped = lines.mapPartitions(x => List[ReversedSearchSpaceTree](Validator.validatePartition(x.toList.map(x => x._2),broadSpace)).iterator)
+            println(" - Starting to merge reversed tree from each partition..")
             val result = mapped.reduce((x,y) => {x.merge(y);x})
+            println(" - Starting to update the seach space tree..")
             space.merge(result)
+            println(" - Unpersisting previous search space tree..")
             broadSpace.unpersist()
         }
         println("Generating output..")
@@ -42,12 +52,15 @@ object Main{
     }
 
     def countAttribs(input:String):Int = {
-        return input.split(",").length+1
+        return input.split(",").length
     }
 
     def hashWithPublicAttribs(arr:Array[String],pubattrid:List[Int]):Int={
-        val v = for(x <- pubattrid) yield arr(x)
-        v.hashCode
+        val k = ListBuffer[String]()
+        for(x<-pubattrid){
+            k+=arr(x)
+        }
+        k.toList.hashCode
     }
 
 }

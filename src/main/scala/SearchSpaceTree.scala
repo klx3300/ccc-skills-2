@@ -3,7 +3,7 @@ package FD
 import scala.collection.mutable.Map
 import scala.collection.mutable.ListBuffer
 
-class SearchSpaceTree(val attribcnt:Int){
+class SearchSpaceTree(val attribcnt:Int) extends Serializable{
     val vertices = scala.collection.mutable.Map[List[Int],scala.collection.mutable.Map[List[Int],Boolean]]()
     def init():Unit={
         val tmpcombs = Combinator.genCombinations(attribcnt)
@@ -15,6 +15,7 @@ class SearchSpaceTree(val attribcnt:Int){
                 while(attribcurr < x(xcurr)){
                     val destbuffer=ListBuffer[Int]()
                     for(y <- x) destbuffer+=y
+                    if(attribcurr == 10) println("BOOM!")
                     destbuffer += attribcurr
                     vertices(x)(destbuffer.toList) = true
                     attribcurr = attribcurr + 1
@@ -26,6 +27,7 @@ class SearchSpaceTree(val attribcnt:Int){
             while(attribcurr < attribcnt){
                 val destbuffer = ListBuffer[Int]()
                 for(y<-x) destbuffer+=y
+                if(attribcurr == 10) printf("BOOM!!(%d/%d)\n",attribcurr,attribcnt)
                 destbuffer += attribcurr
                 vertices(x)(destbuffer.toList) = true
                 attribcurr = attribcurr + 1
