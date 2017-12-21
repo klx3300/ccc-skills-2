@@ -1,9 +1,10 @@
-[0m[[0m[31merror[0m] [0m[0m/home/imzhwk/competitions/cloud-compu-2017-cn/ccc-skills-2/src/main/scala/ReversedSearchSpaceTree.scala:6:7: class ReversedSearchSpaceTree needs to be abstract, since variable vertices is not defined[0m
-[0m[[0m[31merror[0m] [0m[0m(Note that variables need to be initialized to be defined)[0m
-[0m[[0m[31merror[0m] [0m[0mclass ReversedSearchSpaceTree(val attribcnt:Int){[0m
-[0m[[0m[31merror[0m] [0m[0m      ^[0m
-[0m[[0m[31merror[0m] [0m[0m/home/imzhwk/competitions/cloud-compu-2017-cn/ccc-skills-2/src/main/scala/SearchSpaceTree.scala:6:7: class SearchSpaceTree needs to be abstract, since variable vertices is not defined[0m
-[0m[[0m[31merror[0m] [0m[0m(Note that variables need to be initialized to be defined)[0m
-[0m[[0m[31merror[0m] [0m[0mclass SearchSpaceTree(val attribcnt:Int){[0m
-[0m[[0m[31merror[0m] [0m[0m      ^[0m
-[0m[[0m[31merror[0m] [0m[0mtwo errors found[0m
+[0m[[0m[31merror[0m] [0m[0m/home/imzhwk/competitions/cloud-compu-2017-cn/ccc-skills-2/src/main/scala/IOController.scala:23:28: value ++ is not a member of Int[0m
+[0m[[0m[31merror[0m] [0m[0m                        vca++[0m
+[0m[[0m[31merror[0m] [0m[0m                           ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/imzhwk/competitions/cloud-compu-2017-cn/ccc-skills-2/src/main/scala/IOController.scala:26:28: value ++ is not a member of Int[0m
+[0m[[0m[31merror[0m] [0m[0m                        vca++[0m
+[0m[[0m[31merror[0m] [0m[0m                           ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/imzhwk/competitions/cloud-compu-2017-cn/ccc-skills-2/src/main/scala/IOController.scala:28:28: value ++ is not a member of Int[0m
+[0m[[0m[31merror[0m] [0m[0m                        vcb++[0m
+[0m[[0m[31merror[0m] [0m[0m                           ^[0m
+[0m[[0m[31merror[0m] [0m[0mthree errors found[0m

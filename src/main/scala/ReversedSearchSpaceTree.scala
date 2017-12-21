@@ -31,7 +31,7 @@ class ReversedSearchSpaceTree(val attribcnt:Int) extends Serializable{
     def merge(revtree:ReversedSearchSpaceTree):Unit={
         for((lhs,rhsmap) <- revtree.vertices){
             for((dest,iscorr) <- rhsmap){
-                vertices(lhs)(dest) = iscorr
+                if(iscorr) vertices(lhs)(dest) = true
             }
         }
     }

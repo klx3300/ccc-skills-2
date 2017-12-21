@@ -15,7 +15,6 @@ class SearchSpaceTree(val attribcnt:Int) extends Serializable{
                 while(attribcurr < x(xcurr)){
                     val destbuffer=ListBuffer[Int]()
                     for(y <- x) destbuffer+=y
-                    if(attribcurr == 10) println("BOOM!")
                     destbuffer += attribcurr
                     vertices(x)(destbuffer.toList) = true
                     attribcurr = attribcurr + 1
@@ -27,7 +26,6 @@ class SearchSpaceTree(val attribcnt:Int) extends Serializable{
             while(attribcurr < attribcnt){
                 val destbuffer = ListBuffer[Int]()
                 for(y<-x) destbuffer+=y
-                if(attribcurr == 10) printf("BOOM!!(%d/%d)\n",attribcurr,attribcnt)
                 destbuffer += attribcurr
                 vertices(x)(destbuffer.toList) = true
                 attribcurr = attribcurr + 1
@@ -38,17 +36,21 @@ class SearchSpaceTree(val attribcnt:Int) extends Serializable{
     def merge(revtree:ReversedSearchSpaceTree):Unit={
         for((lhs,rhsmap) <- revtree.vertices){
             for((rhs,isboomed) <- rhsmap){
-                vertices(lhs)(rhs) = !isboomed
+                if(isboomed){
+                    Tracker.activity("Invalidated => "+rhs.toString,lhs)
+                    vertices(lhs)(rhs) = false
+                }
             }
         }
     }
-    def toFDs():scala.collection.mutable.Map[List[Int],ListBuffer[Int]]={ // not shrinked yet
-        val fds = scala.collection.mutable.Map[List[Int],ListBuffer[Int]]()
+    def toFDs():scala.collection.mutable.Map[List[Int],List[Int]]={ // not shrinked yet
+        val fds = scala.collection.mutable.Map[List[Int],List[Int]]()
         for((lhs,rhsmap) <- vertices){
-            fds(lhs) = ListBuffer[Int]()
+            val tmpbuffer = ListBuffer[Int]()
             for((rhs,iscorr) <- rhsmap){
-                if(iscorr) fds(lhs)+=rhs(rhs.length-1)
+                if(iscorr) tmpbuffer+=rhs(rhs.length-1)
             }
+            fds(lhs)=tmpbuffer.toList
         }
         fds
     }

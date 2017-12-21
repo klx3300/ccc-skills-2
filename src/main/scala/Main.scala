@@ -5,10 +5,11 @@ import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD._
 import scala.util.control.Breaks._
 import scala.collection.mutable.ListBuffer
+import org.apache.spark.HashPartitioner
 
 object Main{
     def main(args: Array[String]):Unit ={
-        val INPUT_PARTS = 999;
+        val INPUT_PARTS = 1;
         val logfile = args(1)
         val conf = new SparkConf().setAppName("Functional Dependency")
         val sc = new SparkContext(conf)
@@ -19,35 +20,24 @@ object Main{
         val output_file = output_folder + "/my_bots_200_10_result.txt"
         // map input lines to its effective attribs
         val readedlines = sc.textFile(input_file,INPUT_PARTS)
-        val reinforcedlines = readedlines.map(str => str.replaceAll(",,",",ZHWK_INVAL_ATTRIB,"))
         val splitedlines = readedlines.map(str => str.split(","))
-        println("Generating possible attributes..")
         val totattribs = countAttribs(readedlines.first)
         val possibcombs = Combinator.genCombinations(totattribs)
-        println("Generating search space tree..")
         val space = new SearchSpaceTree(totattribs)
+        val logaccu = new LogAccumulator()
+        //Tracker.track(List[Int](2,6))
         for(pubattribs <- possibcombs){
-            print("Validating public attribute ")
-            print(pubattribs.toString)
-            println("..")
-            println(" - Broadcasting search space tree..")
             val broadSpace = sc.broadcast(space)
-            println(" - Starting preparation of repartitioning..")
             val linespre = splitedlines.map(arr => (hashWithPublicAttribs(arr,pubattribs),arr))
-            println(" - Starting repartitioning..")
-            val lines = linespre.partitionBy(new MyHashPartitioner(INPUT_PARTS))
-            println(" - Starting Validator at each partition..")
-            val mapped = lines.mapPartitions(x => List[ReversedSearchSpaceTree](Validator.validatePartition(x.toList.map(x => x._2),broadSpace)).iterator)
-            println(" - Starting to merge reversed tree from each partition..")
-            val result = mapped.reduce((x,y) => {x.merge(y);x})
-            println(" - Starting to update the seach space tree..")
-            space.merge(result)
-            println(" - Unpersisting previous search space tree..")
+            val lines = linespre.partitionBy(new HashPartitioner(INPUT_PARTS))
+            val mapped = lines.mapPartitions(x => List[(ReversedSearchSpaceTree,LogAccumulator)](Validator.validatePartition(x.toList.map(x => x._2),broadSpace)).iterator)
+            val result = mapped.reduce((x,y) => {x._1.merge(y._1);x._2.merge(y._2);x})
+            space.merge(result._1)
+            logaccu.merge(result._2)
             broadSpace.unpersist()
         }
-        println("Generating output..")
         val outputstrs = IOController.FDstoString(space.toFDs)
-        println("All output is:")
+        logaccu.printlogs
         for(x <- outputstrs) println(x)
     }
 
@@ -61,6 +51,7 @@ object Main{
             k+=arr(x)
         }
         k.toList.hashCode
+        1
     }
 
 }
