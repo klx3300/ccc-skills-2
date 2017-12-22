@@ -5,7 +5,6 @@ import scala.util.control.Breaks._
 
 object Combinator{
     def genCombinations(attribcnt:Int):List[List[Int]]={
-        val attribidarr = 0 until attribcnt;
         val topbuffer =new ListBuffer[List[Int]]()
         for(currcnt <- 1 until attribcnt){
             val bottombuffer = new ListBuffer[Int]()

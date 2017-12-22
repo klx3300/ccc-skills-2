@@ -1,6 +1,11 @@
 # ccc-skills-2
 cloud computing competition skills 2
 
+## Execution Times
+
+- (200/20) Bare: 7'12
+- (200/20) PubAttrsCut: 3'59
+- (200/20) ..+RevTreeCut: 3'46
 
 
 ## Overall Procedure

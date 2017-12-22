@@ -1,10 +1,11 @@
 package FD
 
 import org.apache.spark.broadcast._
+import scala.collection.mutable._
 
 object Validator{
-    def validatePartition(dataset:List[Array[String]],spacetree:Broadcast[SearchSpaceTree]):(ReversedSearchSpaceTree,LogAccumulator)={
-        val revtree = new ReversedSearchSpaceTree(spacetree.value.attribcnt)
+    def validatePartition(dataset:List[Array[String]],spacetree:Broadcast[SearchSpaceTree],possibcombs:Broadcast[Map[List[Int],Boolean]]):(ReversedSearchSpaceTree,LogAccumulator)={
+        val revtree = new ReversedSearchSpaceTree(spacetree.value.attribcnt,possibcombs.value)
         val loga = new LogAccumulator()
         for((lhs,possibrhs) <- spacetree.value.vertices){
             for((rhs,canvalid) <- possibrhs){

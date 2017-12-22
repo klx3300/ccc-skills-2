@@ -1,9 +1,9 @@
 package FD
 
-import scala.collection.mutable.Map
+import scala.collection.mutable._
 import scala.collection.mutable.ListBuffer
 
-class ReversedSearchSpaceTree(val attribcnt:Int) extends Serializable{
+class ReversedSearchSpaceTree(val attribcnt:Int,val possibcombs:Map[List[Int],Boolean]) extends Serializable{
     val vertices = scala.collection.mutable.Map[List[Int],scala.collection.mutable.Map[List[Int],Boolean]]()
     def init():Unit={
         val tmpcombs = Combinator.genCombinations(attribcnt)
@@ -31,7 +31,7 @@ class ReversedSearchSpaceTree(val attribcnt:Int) extends Serializable{
     def merge(revtree:ReversedSearchSpaceTree):Unit={
         for((lhs,rhsmap) <- revtree.vertices){
             for((dest,iscorr) <- rhsmap){
-                if(iscorr) vertices(lhs)(dest) = true
+                vertices(lhs)(dest) = iscorr
             }
         }
     }

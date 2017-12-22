@@ -1,10 +1,10 @@
 package FD
 
-import scala.collection.mutable.Map
+import scala.collection.mutable._
 import scala.collection.mutable.ListBuffer
 
 class SearchSpaceTree(val attribcnt:Int) extends Serializable{
-    val vertices = scala.collection.mutable.Map[List[Int],scala.collection.mutable.Map[List[Int],Boolean]]()
+    val vertices = Map[List[Int],Map[List[Int],Boolean]]()
     def init():Unit={
         val tmpcombs = Combinator.genCombinations(attribcnt)
         for(x <- tmpcombs){
@@ -33,18 +33,19 @@ class SearchSpaceTree(val attribcnt:Int) extends Serializable{
         }
     }
     init()
-    def merge(revtree:ReversedSearchSpaceTree):Unit={
+    def merge(revtree:ReversedSearchSpaceTree,possibcombs:Map[List[Int],Boolean]):Unit={
         for((lhs,rhsmap) <- revtree.vertices){
             for((rhs,isboomed) <- rhsmap){
                 if(isboomed){
-                    Tracker.activity("Invalidated => "+rhs.toString,lhs)
+                    //Tracker.activity("Invalidated => "+rhs.toString,lhs)
+                    if(possibcombs.getOrElse(lhs,false)) possibcombs.remove(lhs)
                     vertices(lhs)(rhs) = false
                 }
             }
         }
     }
-    def toFDs():scala.collection.mutable.Map[List[Int],List[Int]]={ // not shrinked yet
-        val fds = scala.collection.mutable.Map[List[Int],List[Int]]()
+    def toFDs():Map[List[Int],List[Int]]={ // not shrinked yet
+        val fds = Map[List[Int],List[Int]]()
         for((lhs,rhsmap) <- vertices){
             val tmpbuffer = ListBuffer[Int]()
             for((rhs,iscorr) <- rhsmap){
