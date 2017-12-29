@@ -4,9 +4,9 @@ import org.apache.spark.broadcast._
 import scala.collection.mutable._
 
 object Validator{
-    def validatePartition(dataset:List[Array[String]],spacetree:Broadcast[SearchSpaceTree],possibcombs:Broadcast[Map[List[Int],Boolean]]):(ReversedSearchSpaceTree,LogAccumulator)={
+    def validatePartition(id:Int,dataset:List[Array[String]],spacetree:Broadcast[SearchSpaceTree],possibcombs:Broadcast[Map[List[Int],Boolean]]):(ReversedSearchSpaceTree,LogAccumulator)={
         val revtree = new ReversedSearchSpaceTree(spacetree.value.attribcnt,possibcombs.value)
-        val loga = new LogAccumulator()
+        val loga = new LogAccumulator(id)
         for((lhs,possibrhs) <- spacetree.value.vertices){
             for((rhs,canvalid) <- possibrhs){
                 val failed = revtree.vertices(lhs).getOrElse(rhs,false)
@@ -14,9 +14,6 @@ object Validator{
                     val lhsequvcnt = Equivalencer.getEquivalenceCounts(lhs,dataset,loga)
                     val rhsequvcnt = Equivalencer.getEquivalenceCounts(rhs,dataset,loga)
                     if(lhsequvcnt != rhsequvcnt){
-                        if(lhs.toString.hashCode() == List[Int](2,7).toString.hashCode)
-                            loga.log(lhs.toString + " " + lhsequvcnt.toString + "/" + rhs.toString + " " + rhsequvcnt.toString)
-                        //if(lhs.contains(2) && lhs.contains(6)) loga.log("Invalidation at "+lhs.toString + " => " + rhs.toString)
                         revtree.update(lhs,rhs(rhs.length-1))
                     }
                 }

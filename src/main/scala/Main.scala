@@ -29,14 +29,16 @@ object Main{
             possibcombs(x) = true
         }
         val space = new SearchSpaceTree(totattribs)
-        val logaccu = new LogAccumulator()
+        val logaccu = new LogAccumulator(-1)
         //Tracker.track(List[Int](2,7))
         for((pubattribs,thisisuseless) <- possibcombs){
             val broadSpace = sc.broadcast(space)
             val broadcombs = sc.broadcast(possibcombs)
             val linespre = splitedlines.map(arr => (hashWithPublicAttribs(arr,pubattribs),arr))
             val lines = linespre.partitionBy(new MyHashPartitioner(INPUT_PARTS))
-            val mapped = lines.mapPartitions(x => List[(ReversedSearchSpaceTree,LogAccumulator)](Validator.validatePartition(x.toList.map(x => x._2),broadSpace,broadcombs)).iterator)
+            val mapped = lines.mapPartitionsWithIndex((partindex,x) => List[(ReversedSearchSpaceTree,LogAccumulator)]
+                (Validator.validatePartition(partindex,
+                x.toList.map(x => x._2),broadSpace,broadcombs)).iterator)
             val result = mapped.reduce((x,y) => {x._1.merge(y._1);x._2.merge(y._2);x})
             broadcombs.unpersist()
             space.merge(result._1,possibcombs)

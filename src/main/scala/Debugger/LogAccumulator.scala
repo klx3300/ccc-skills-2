@@ -3,7 +3,7 @@ package FD
 import scala.collection.mutable.ArrayBuffer
 import java.text.SimpleDateFormat
 
-class LogAccumulator extends Serializable{
+class LogAccumulator(val id:Int) extends Serializable{
     var logs = ArrayBuffer[(Long,String)]()
     def log(logstr:String):Unit={
         logs.append((System.currentTimeMillis,logstr))
