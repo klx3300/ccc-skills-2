@@ -40,11 +40,19 @@ object IOController{
     def FDstoString(fds:scala.collection.mutable.Map[List[Int],List[Int]]):List[String]={
         val buffer = ListBuffer[String]()
         for((lhs,rhs) <- fds){
-            var strbuf = new String()
-            strbuf += lhs.map(x=>x+1).toString
-            strbuf += "=>"
-            strbuf += rhs.map(x=>x+1).toString
-            buffer += strbuf
+            val strbuf = new StringBuffer()
+            val corrlhs = lhs.map(x=>x+1)
+            for(x <- corrlhs){
+                strbuf.append(x)
+                if(x != corrlhs.last) strbuf.append(",")
+            }
+            strbuf.append(":")
+            val corrrhs = rhs.map(x=>x+1)
+            for(x <- corrrhs){
+                strbuf.append(x)
+                if(x != corrrhs.last) strbuf.append(",")
+            }
+            buffer += strbuf.toString
         }
         buffer.toList
     }

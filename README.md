@@ -1,6 +1,14 @@
 # ccc-skills-2
 cloud computing competition skills 2
 
+
+
+## Exploded
+
+<20000,10> EXPLODED : 2,7 => 5,8,9,10
+
+
+
 ## Execution Times
 
 - (200/20) Bare: 7'12

@@ -14,6 +14,8 @@ object Validator{
                     val lhsequvcnt = Equivalencer.getEquivalenceCounts(lhs,dataset,loga)
                     val rhsequvcnt = Equivalencer.getEquivalenceCounts(rhs,dataset,loga)
                     if(lhsequvcnt != rhsequvcnt){
+                        if(lhs.toString.hashCode() == List[Int](2,7).toString.hashCode)
+                            loga.log(lhs.toString + " " + lhsequvcnt.toString + "/" + rhs.toString + " " + rhsequvcnt.toString)
                         //if(lhs.contains(2) && lhs.contains(6)) loga.log("Invalidation at "+lhs.toString + " => " + rhs.toString)
                         revtree.update(lhs,rhs(rhs.length-1))
                     }

@@ -9,7 +9,7 @@ import org.apache.spark.HashPartitioner
 
 object Main{
     def main(args: Array[String]):Unit ={
-        val INPUT_PARTS = 20;
+        val INPUT_PARTS = 998;
         val logfile = args(1)
         val conf = new SparkConf().setAppName("Functional Dependency")
         val sc = new SparkContext(conf)
@@ -30,12 +30,12 @@ object Main{
         }
         val space = new SearchSpaceTree(totattribs)
         val logaccu = new LogAccumulator()
-        //Tracker.track(List[Int](2,6))
+        //Tracker.track(List[Int](2,7))
         for((pubattribs,thisisuseless) <- possibcombs){
             val broadSpace = sc.broadcast(space)
             val broadcombs = sc.broadcast(possibcombs)
             val linespre = splitedlines.map(arr => (hashWithPublicAttribs(arr,pubattribs),arr))
-            val lines = linespre.partitionBy(new HashPartitioner(INPUT_PARTS))
+            val lines = linespre.partitionBy(new MyHashPartitioner(INPUT_PARTS))
             val mapped = lines.mapPartitions(x => List[(ReversedSearchSpaceTree,LogAccumulator)](Validator.validatePartition(x.toList.map(x => x._2),broadSpace,broadcombs)).iterator)
             val result = mapped.reduce((x,y) => {x._1.merge(y._1);x._2.merge(y._2);x})
             broadcombs.unpersist()
@@ -44,7 +44,7 @@ object Main{
             broadSpace.unpersist()
         }
         val outputstrs = IOController.FDstoString(space.toFDs)
-        //logaccu.printlogs
+        logaccu.printlogs
         for(x <- outputstrs) println(x)
     }
 

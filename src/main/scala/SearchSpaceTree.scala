@@ -37,7 +37,7 @@ class SearchSpaceTree(val attribcnt:Int) extends Serializable{
         for((lhs,rhsmap) <- revtree.vertices){
             for((rhs,isboomed) <- rhsmap){
                 if(isboomed){
-                    //Tracker.activity("Invalidated => "+rhs.toString,lhs)
+                    Tracker.activity("Invalidated => "+rhs.toString,lhs)
                     if(possibcombs.getOrElse(lhs,false)) possibcombs.remove(lhs)
                     vertices(lhs)(rhs) = false
                 }
