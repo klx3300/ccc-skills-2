@@ -12,6 +12,16 @@ object Equivalencer{
             }
             counter(buffer.toList) = 1
         }
+        if(loga != null && counter.size != 0){
+            val strbuffer = new StringBuffer()
+            strbuffer append "{"
+            for((record,useless) <- counter){
+                strbuffer append record.toString
+                strbuffer append ", "
+            }
+            strbuffer append "}"
+            loga.log(attribs.toString + ": " + strbuffer.toString)
+        }
         counter.size
     }
 }
