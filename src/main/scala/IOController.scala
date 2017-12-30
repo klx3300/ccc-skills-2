@@ -30,7 +30,7 @@ object IOController{
                 each += rhs
             }
             if(each.size > 0 ){
-                answer(lhs) = each.toList
+                answer(lhs) = each.sorted.toList
             }
         }
         answer
@@ -40,15 +40,16 @@ object IOController{
         val buffer = ListBuffer[String]()
         for((lhs,rhs) <- fds){
             val strbuf = new StringBuffer()
+            strbuf.append("[")
             val corrlhs = lhs.map(x=>x+1)
             for(x <- corrlhs){
-                strbuf.append(x)
+                strbuf.append("column"+x)
                 if(x != corrlhs.last) strbuf.append(",")
             }
-            strbuf.append(":")
+            strbuf.append("]:")
             val corrrhs = rhs.map(x=>x+1)
             for(x <- corrrhs){
-                strbuf.append(x)
+                strbuf.append("column"+x)
                 if(x != corrrhs.last) strbuf.append(",")
             }
             buffer += strbuf.toString
