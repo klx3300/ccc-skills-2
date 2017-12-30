@@ -6,14 +6,15 @@ object Equivalencer{
     def getEquivalenceCounts(attribs:List[Int],dataset:List[Array[String]],loga:LogAccumulator):Int={
         val counter = scala.collection.mutable.Map[List[String],Int]()
         for(x <- dataset){
-            val buffer = ListBuffer[String]()
-            for(y <- attribs){
-                buffer += x(y)
-            }
-            if(counter.contains(buffer.toList))
-                counter(buffer.toList) += 1
+            val buffer = attribs.collect(x)
+//            val buffer = ListBuffer[String]()
+//            for(y <- attribs){
+//                buffer += x(y)
+//            }
+            if(counter.contains(buffer))
+                counter(buffer) += 1
             else
-                counter(buffer.toList) = 1
+                counter(buffer) = 1
         }
         if(loga != null && counter.size != 0){
             val strbuffer = new StringBuffer()
