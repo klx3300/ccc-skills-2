@@ -44,7 +44,7 @@ object Main{
             val lines = linespre.partitionBy(new MyHashPartitioner(INPUT_PARTS))
             val mapped = lines.mapPartitionsWithIndex((partindex,x) => List[(ReversedSearchSpaceTree,LogAccumulator)]
                 (Validator.validatePartition(partindex,
-                x.toList.map(x => x._2),broadSpace,broadcombs)).iterator)
+                x.toList.map(x => x._2),broadSpace,broadcombs,pubattribs)).iterator)
             val result = mapped.reduce((x,y) => {x._1.merge(y._1);x._2.merge(y._2);x})
             broadcombs.unpersist()
             space.merge(result._1,possibcombs)
