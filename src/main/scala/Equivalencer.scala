@@ -10,12 +10,18 @@ object Equivalencer{
             for(y <- attribs){
                 buffer += x(y)
             }
-            counter(buffer.toList) = 1
+            if(counter.contains(buffer.toList))
+                counter(buffer.toList) += 1
+            else
+                counter(buffer.toList) = 1
         }
         if(loga != null && counter.size != 0){
             val strbuffer = new StringBuffer()
             strbuffer append "{"
-            for((record,useless) <- counter){
+            for((record,times) <- counter){
+                strbuffer append "["
+                strbuffer append times
+                strbuffer append "x]"
                 strbuffer append record.toString
                 strbuffer append ", "
             }

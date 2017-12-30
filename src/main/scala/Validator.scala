@@ -11,7 +11,7 @@ object Validator{
             for((rhs,canvalid) <- possibrhs){
                 val failed = revtree.vertices(lhs).getOrElse(rhs,false)
                 if(canvalid==true && failed == false){
-                    if(lhs.contains(1) && lhs.contains(6) && lhs.size == 2){
+                    if(lhs.contains(1) && lhs.contains(8) && rhs.contains(9) && lhs.size == 2){
                         val lhsequvcnt = Equivalencer.getEquivalenceCounts(lhs,dataset,loga)
                         val rhsequvcnt = Equivalencer.getEquivalenceCounts(rhs,dataset,loga)
                         if(lhsequvcnt != rhsequvcnt){

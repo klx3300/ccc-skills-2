@@ -7,6 +7,10 @@ cloud computing competition skills 2
 
 <20000,10> EXPLODED : 2,7 => 5,8,9,10
 
+> Validation assumption ERROR?
+> can A,B->C + A,B->D => A,B=>C,D?
+> answer should be yes?
+
 
 
 ## Execution Times
