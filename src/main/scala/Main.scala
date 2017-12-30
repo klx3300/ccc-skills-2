@@ -52,7 +52,7 @@ object Main{
             logaccu.merge(result._2)
             broadSpace.unpersist()
         }
-        val outputstrs = IOController.FDstoString(space.toFDs)
+        val outputstrs = IOController.FDstoString(IOController.FDsShrink(space.toFDs))
         logaccu.printlogs
         //sc.parallelize(outputstrs,1).saveAsTextFile(output_file)
         for(x <- outputstrs) println(x)

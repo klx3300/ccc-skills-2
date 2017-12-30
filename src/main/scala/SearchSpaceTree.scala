@@ -44,15 +44,17 @@ class SearchSpaceTree(val attribcnt:Int) extends Serializable{
             }
         }
     }
-    def toFDs():Map[List[Int],List[Int]]={ // not shrinked yet
-        val fds = Map[List[Int],List[Int]]()
-        for((lhs,rhsmap) <- vertices){
-            val tmpbuffer = ListBuffer[Int]()
-            for((rhs,iscorr) <- rhsmap){
-                if(iscorr) tmpbuffer+=rhs(rhs.length-1)
+    def toFDs():List[(List[Int],Int)]={ // not shrinked yet
+        val fds = ListBuffer[(List[Int],Int)]()
+        val attribs = Combinator.genCombinations(attribcnt)
+        for (lhs <- attribs){
+            val rhsmap = vertices(lhs)
+            for((rhs,iscorr) <- rhsmap) {
+                if (iscorr) {
+                    fds += ((lhs, rhs.last))
+                }
             }
-            fds(lhs)=tmpbuffer.toList
         }
-        fds
+        fds.toList
     }
 }
