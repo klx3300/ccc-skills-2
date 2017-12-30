@@ -53,6 +53,7 @@ object Main{
         }
         val outputstrs = IOController.FDstoString(space.toFDs)
         logaccu.printlogs
+        //sc.parallelize(outputstrs,1).saveAsTextFile(output_file)
         for(x <- outputstrs) println(x)
     }
 
