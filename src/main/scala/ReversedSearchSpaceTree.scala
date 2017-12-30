@@ -3,7 +3,7 @@ package FD
 import scala.collection.mutable._
 import scala.collection.mutable.ListBuffer
 
-class ReversedSearchSpaceTree(val attribcnt:Int,val possibcombs:Map[List[Int],Boolean]) extends Serializable{
+class ReversedSearchSpaceTree(val attribcnt:Int/*,val possibcombs:Map[List[Int],Boolean]*/) extends Serializable{
     val vertices = scala.collection.mutable.Map[List[Int],scala.collection.mutable.Map[List[Int],Boolean]]()
     def init():Unit={
         val tmpcombs = Combinator.genCombinations(attribcnt)
