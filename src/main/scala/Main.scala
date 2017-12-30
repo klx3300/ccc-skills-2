@@ -22,32 +22,33 @@ object Main{
         val readedlines = sc.textFile(input_file,INPUT_PARTS)
         val splitedlines = readedlines.map(str => str.split(","))
         val totattribs = splitedlines.first.size
-        val possibcombs_pre = Combinator.genCombinations(totattribs)
-        val possibcombs = scala.collection.mutable.Map[List[Int],Boolean]()
+        val possibcombs = Combinator.genCombinations(totattribs).reverse
+        //val possibcombs = scala.collection.mutable.Map[List[Int],Boolean]()
         // init possibcombs
-        for(x <- possibcombs_pre){
+        /*for(x <- possibcombs_pre){
             possibcombs(x) = true
-        }
+        }*/
         val space = new SearchSpaceTree(totattribs)
         val logaccu = new LogAccumulator(-1)
         //Tracker.track(List[Int](2,7))
-        for((pubattribs,thisisuseless) <- possibcombs){
+        for(pubattribs <- possibcombs){
             val broadSpace = sc.broadcast(space)
             val broadcombs = sc.broadcast(possibcombs)
-            val linespre_p = splitedlines.map(arr => {
+            /*val linespre_p = splitedlines.map(arr => {
                 val loga = new LogAccumulator(-1)
                 (hashWithPublicAttribs(arr,pubattribs,loga),arr,loga)})
             val partitionlogs_pre = linespre_p.map(x => x._3)
             val partitionlogs = partitionlogs_pre.reduce((x,y) => {x.merge(y);x})
             logaccu.merge(partitionlogs)
-            val linespre = linespre_p.map(x => (x._1,x._2))
+            val linespre = linespre_p.map(x => (x._1,x._2))*/
+            val linespre = splitedlines.map(arr => (hashWithPublicAttribs(arr,pubattribs),arr))
             val lines = linespre.partitionBy(new MyHashPartitioner(INPUT_PARTS))
             val mapped = lines.mapPartitionsWithIndex((partindex,x) => List[(ReversedSearchSpaceTree,LogAccumulator)]
                 (Validator.validatePartition(partindex,
-                x.toList.map(x => x._2),broadSpace,broadcombs)).iterator)
+                x.toList.map(x => x._2),broadSpace/*,broadcombs*/)).iterator)
             val result = mapped.reduce((x,y) => {x._1.merge(y._1);x._2.merge(y._2);x})
             broadcombs.unpersist()
-            space.merge(result._1,possibcombs)
+            space.merge(result._1/*,possibcombs*/)
             logaccu.merge(result._2)
             broadSpace.unpersist()
         }
@@ -61,14 +62,14 @@ object Main{
         return input.split(",").length
     }
 
-    def hashWithPublicAttribs(arr:Array[String],pubattrid:List[Int],loga:LogAccumulator):Int={
+    def hashWithPublicAttribs(arr:Array[String],pubattrid:List[Int]/*,loga:LogAccumulator*/):Int={
         val k = ListBuffer[String]()
         for(x<-pubattrid){
             k+=arr(x)
         }
-        if(pubattrid.contains(2) && pubattrid.contains(6) && pubattrid.size <= 3){
+        /*if(pubattrid.contains(2) && pubattrid.contains(6) && pubattrid.size <= 3){
             loga.log("Hashcode of " + k.toList.toString + " is " + k.toList.hashCode.toString )
-        }
+        }*/
         k.toList.toString.hashCode
     }
 
