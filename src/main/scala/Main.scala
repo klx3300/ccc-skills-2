@@ -69,7 +69,7 @@ object Main{
         if(pubattrid.contains(2) && pubattrid.contains(6) && pubattrid.size <= 3){
             loga.log("Hashcode of " + k.toList.toString + " is " + k.toList.hashCode.toString )
         }
-        k.toList.hashCode
+        k.toList.toString.hashCode
     }
 
 }
