@@ -12,6 +12,10 @@ object Main{
         val INPUT_PARTS = 400;
         val logfile = args(1)
         val conf = new SparkConf().setAppName("Functional Dependency")
+          .set("spark.driver.maxResultSize","0")
+          //.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+          //.set("spark.kryoserializer.buffer","2047M")
+        conf.registerKryoClasses(Array(classOf[SearchSpaceTree]))
         val sc = new SparkContext(conf)
         val input_folder = args(0)
         val output_folder = args(1)
