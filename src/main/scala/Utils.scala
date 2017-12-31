@@ -1,5 +1,0 @@
-package FD
-
-
-object Utils{
-}
