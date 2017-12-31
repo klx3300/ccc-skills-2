@@ -9,7 +9,7 @@ import org.apache.spark.HashPartitioner
 
 object Main{
     def main(args: Array[String]):Unit ={
-        val INPUT_PARTS = 20;
+        val INPUT_PARTS = 400;
         val logfile = args(1)
         val conf = new SparkConf().setAppName("Functional Dependency")
         val sc = new SparkContext(conf)
