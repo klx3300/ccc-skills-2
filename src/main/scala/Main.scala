@@ -16,8 +16,8 @@ object Main{
         val input_folder = args(0)
         val output_folder = args(1)
         val temp_folder = args(2)
-        val input_file = input_folder + "/bots_200_10.csv"
-        val output_file = output_folder + "/my_bots_200_10_result.txt"
+        val input_file = input_folder + "/bots_20m_15.csv"
+        val output_file = output_folder
         // map input lines to its effective attribs
         val readedlines = sc.textFile(input_file,INPUT_PARTS)
         val splitedlines = readedlines.map(str => str.split(","))
