@@ -41,7 +41,7 @@ class SearchSpaceTree(val attribcnt: Int) extends Serializable {
     val allboomedlogs = boomedlogs.flatMap( x => {
       val tmpleft = x.dropRight(1)
       val tmpright = x.last
-      Combinator.genCombinations(tmpleft).map(y => (y,y:+tmpright)).iterator
+      Combinator.genFullCombinations(tmpleft).map(y => (y,y:+tmpright)).iterator
     })
     for (x <- allboomedlogs){
       vertices(x._1)(x._2) = false;

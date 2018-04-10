@@ -9,4 +9,7 @@ object Combinator {
   def genCombinations(attribs: List[Int]): List[List[Int]] = {
     1.until(attribs.length).flatMap(attribs.combinations).toList
   }
+  def genFullCombinations(attribs: List[Int]): List[List[Int]] = {
+    1.until(attribs.length+1).flatMap(attribs.combinations).toList
+  }
 }
