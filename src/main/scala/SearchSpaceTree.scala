@@ -37,13 +37,8 @@ class SearchSpaceTree(val attribcnt: Int) extends Serializable {
   init()
 
   def merge(boomedlogs: mutable.HashSet[List[Int]]): Unit = {
-    val allboomedlogs = boomedlogs.flatMap(x => {
-      val tmpleft = x.dropRight(1)
-      val tmpright = x.last
-      Combinator.genFullCombinations(tmpleft).map(y => (y, y :+ tmpright)).iterator
-    })
-    for (x <- allboomedlogs) {
-      vertices(x._1)(x._2) = false
+    for (x <- boomedlogs) {
+      vertices(x.dropRight(1))(x) = false
     }
   }
 

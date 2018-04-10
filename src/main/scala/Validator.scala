@@ -14,7 +14,10 @@ object Validator {
         val lhsequvcnt = Equivalencer.getEquivalenceCounts(lhs, dataset)
         val rhsequvcnt = Equivalencer.getEquivalenceCounts(rhs, dataset)
         if (lhsequvcnt != rhsequvcnt) {
-          boomedlogs.add(rhs)
+          val allboomed = Combinator.genFullCombinations(lhs).map(x => x:+rhs.last)
+          for(x <- allboomed){
+            boomedlogs.add(x)
+          }
         }
       }
     }
