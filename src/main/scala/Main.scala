@@ -25,6 +25,9 @@ object Main {
     val possibcombs = Combinator.genCombinations(totattribs).reverse
     val space = new SearchSpaceTree(totattribs)
     for (pubattribs <- possibcombs) {
+      val possibrhs = space.vertices(pubattribs)
+      val result = possibrhs.toArray.map(x => x._2).reduce((x,y)=> (x || y))
+      if(result){
       val broadSpace = sc.broadcast(space)
       val broadcombs = sc.broadcast(possibcombs)
       val linespre = splitedlines.map(arr => (hashWithPublicAttribs(arr, pubattribs), arr))
@@ -40,6 +43,7 @@ object Main {
       broadcombs.unpersist()
       space.merge(result)
       broadSpace.unpersist()
+      }
     }
     val outputstrs = IOController.FDstoString(IOController.FDsShrink(space.toFDs))
     sc.parallelize(outputstrs).saveAsTextFile(output_file)
