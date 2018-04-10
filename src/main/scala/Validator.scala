@@ -1,22 +1,22 @@
 package FD
 
 import org.apache.spark.broadcast._
+import scala.collection.mutable.HashSet
 
 object Validator {
-  def validatePartition(id: Int, dataset: List[Array[String]], spacetree: Broadcast[SearchSpaceTree], pubattribs: List[Int]): ReversedSearchSpaceTree = {
-    val revtree = new ReversedSearchSpaceTree(spacetree.value.attribcnt)
+  def validatePartition(id: Int, dataset: List[Array[String]], spacetree: Broadcast[SearchSpaceTree], pubattribs: List[Int]): HashSet[List[Int]] = {
+    val boomedlogs = new HashSet[List[Int]]()
     val possibrhs = spacetree.value.vertices(pubattribs)
     val lhs = pubattribs
     for ((rhs, canvalid) <- possibrhs) {
-      val failed = revtree.vertices(lhs).getOrElse(rhs, false)
-      if (canvalid && !failed) {
+      if (canvalid) {
         val lhsequvcnt = Equivalencer.getEquivalenceCounts(lhs, dataset)
         val rhsequvcnt = Equivalencer.getEquivalenceCounts(rhs, dataset)
         if (lhsequvcnt != rhsequvcnt) {
-          revtree.update(lhs, rhs.last)
+          boomedlogs.add(rhs)
         }
       }
     }
-    revtree
+    boomedlogs
   }
 }

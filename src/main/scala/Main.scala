@@ -2,6 +2,7 @@ package FD
 
 import org.apache.spark.rdd.RDD._
 import org.apache.spark.{SparkConf, SparkContext}
+import scala.collection.mutable.HashSet
 
 object Main {
   def main(args: Array[String]): Unit = {
@@ -26,7 +27,7 @@ object Main {
     val space = new SearchSpaceTree(totattribs)
     for (pubattribs <- possibcombs) {
       val possibrhs = space.vertices(pubattribs)
-      val result = possibrhs.toArray.map(x => x._2).reduce((x,y)=> (x || y))
+      val result = possibrhs.map(x => x._2).reduce((x,y)=> (x | y))
       if(result){
       val broadSpace = sc.broadcast(space)
       val broadcombs = sc.broadcast(possibcombs)
@@ -34,11 +35,10 @@ object Main {
       val lines = linespre.partitionBy(new MyHashPartitioner(INPUT_PARTS))
       val mapped = lines.mapPartitionsWithIndex(
         (partindex, x) =>
-          List[ReversedSearchSpaceTree]
+          List[HashSet[List[Int]]]
             (Validator.validatePartition(partindex, x.toList.map(x => x._2), broadSpace, pubattribs)).iterator)
       val result = mapped.reduce((x, y) => {
-        x.merge(y)
-        x
+        x.union(y)
       })
       broadcombs.unpersist()
       space.merge(result)

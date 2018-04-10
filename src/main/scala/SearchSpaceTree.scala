@@ -1,10 +1,11 @@
 package FD
 
-import scala.collection.mutable
+import scala.collection.mutable.Map
 import scala.collection.mutable.ListBuffer
+import scala.collection.mutable.HashSet
 
 class SearchSpaceTree(val attribcnt: Int) extends Serializable {
-  val vertices: mutable.Map[List[Int], mutable.Map[List[Int], Boolean]] = mutable.Map[List[Int], mutable.Map[List[Int], Boolean]]()
+  val vertices: Map[List[Int], Map[List[Int], Boolean]] = Map[List[Int], Map[List[Int], Boolean]]()
 
   def init(): Unit = {
     val tmpcombs = Combinator.genCombinations(attribcnt)
@@ -36,13 +37,14 @@ class SearchSpaceTree(val attribcnt: Int) extends Serializable {
 
   init()
 
-  def merge(revtree: ReversedSearchSpaceTree): Unit = {
-    for ((lhs, rhsmap) <- revtree.vertices) {
-      for ((rhs, isboomed) <- rhsmap) {
-        if (isboomed) {
-          vertices(lhs)(rhs) = false
-        }
-      }
+  def merge(boomedlogs : HashSet[List[Int]]): Unit = {
+    val allboomedlogs = boomedlogs.flatMap( x => {
+      val tmpleft = x.dropRight(1)
+      val tmpright = x.last
+      Combinator.genCombinations(tmpleft).map(y => (y,y:+tmpright)).iterator
+    })
+    for (x <- allboomedlogs){
+      vertices(x._1)(x._2) = false;
     }
   }
 
