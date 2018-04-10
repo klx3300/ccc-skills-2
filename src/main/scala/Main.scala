@@ -2,11 +2,12 @@ package FD
 
 import org.apache.spark.rdd.RDD._
 import org.apache.spark.{SparkConf, SparkContext}
-import scala.collection.mutable.HashSet
+
+import scala.collection.mutable
 
 object Main {
   def main(args: Array[String]): Unit = {
-    val INPUT_PARTS = 576
+    val INPUT_PARTS = 10
     val logfile = args(1)
     val conf = new SparkConf().setAppName("Functional Dependency")
       .set("spark.driver.maxResultSize", "0")
@@ -27,26 +28,26 @@ object Main {
     val space = new SearchSpaceTree(totattribs)
     for (pubattribs <- possibcombs) {
       val possibrhs = space.vertices(pubattribs)
-      val result = possibrhs.map(x => x._2).reduce((x,y)=> (x | y))
-      if(result){
-      val broadSpace = sc.broadcast(space)
-      val broadcombs = sc.broadcast(possibcombs)
-      val linespre = splitedlines.map(arr => (hashWithPublicAttribs(arr, pubattribs), arr))
-      val lines = linespre.partitionBy(new MyHashPartitioner(INPUT_PARTS))
-      val mapped = lines.mapPartitionsWithIndex(
-        (partindex, x) =>
-          List[HashSet[List[Int]]]
-            (Validator.validatePartition(partindex, x.toList.map(x => x._2), broadSpace, pubattribs)).iterator)
-      val result = mapped.reduce((x, y) => {
-        x.union(y)
-      })
-      broadcombs.unpersist()
-      space.merge(result)
-      broadSpace.unpersist()
+      val result = possibrhs.values.reduce((x, y) => x | y)
+      if (result) {
+        val broadSpace = sc.broadcast(space)
+        val broadcombs = sc.broadcast(possibcombs)
+        val linespre = splitedlines.map(arr => (hashWithPublicAttribs(arr, pubattribs), arr))
+        val lines = linespre.partitionBy(new MyHashPartitioner(INPUT_PARTS))
+        val mapped = lines.mapPartitionsWithIndex(
+          (partindex, x) =>
+            List[mutable.HashSet[List[Int]]]
+              (Validator.validatePartition(partindex, x.toList.map(x => x._2), broadSpace, pubattribs)).iterator)
+        val result = mapped.reduce((x, y) => {
+          x.union(y)
+        })
+        broadcombs.unpersist()
+        space.merge(result)
+        broadSpace.unpersist()
       }
     }
     val outputstrs = IOController.FDstoString(IOController.FDsShrink(space.toFDs))
-    sc.parallelize(outputstrs).saveAsTextFile(output_file)
+    sc.parallelize(outputstrs, 1).saveAsTextFile(output_file)
     //for(x <- outputstrs) println(x)
   }
 

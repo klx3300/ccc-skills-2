@@ -1,11 +1,12 @@
 package FD
 
 import org.apache.spark.broadcast._
-import scala.collection.mutable.HashSet
+
+import scala.collection.mutable
 
 object Validator {
-  def validatePartition(id: Int, dataset: List[Array[String]], spacetree: Broadcast[SearchSpaceTree], pubattribs: List[Int]): HashSet[List[Int]] = {
-    val boomedlogs = new HashSet[List[Int]]()
+  def validatePartition(id: Int, dataset: List[Array[String]], spacetree: Broadcast[SearchSpaceTree], pubattribs: List[Int]): mutable.HashSet[List[Int]] = {
+    val boomedlogs = new mutable.HashSet[List[Int]]()
     val possibrhs = spacetree.value.vertices(pubattribs)
     val lhs = pubattribs
     for ((rhs, canvalid) <- possibrhs) {
