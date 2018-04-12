@@ -1,0 +1,28 @@
+Given attrs, Dataset R
+for elements => Ai in attrs:
+    take Ai out of attrs, => attrs'
+    if validFD(attrs' -> Ai)
+        for elements => Aj in attrs' :
+            take Aj out of attrs', => attrs''
+            if validFD(attrs'' -> Ai)
+                join attrs'' into Qc # Queue of correct
+        intersect of all elem in Qc => pubattrs
+        if empty(pubattrs)
+            [ all Qc -> Aj ] +=> FDs
+            continue
+        if validFD(pubattrs -> Aj)
+            [ pubattrs -> Aj ] +=> FDs
+            continue
+        length(pubattrs) => minAttrCnts
+        while(length(Qc))
+            for all Combination2(Qc) => (a,b):
+                intersect(a,b) => abpub
+                if(length(abpub) <= minAttrCnts)
+                    continue
+                if validFD(abpub -> Aj):
+                    [ abpub -> Aj ] +=> Qc'
+                    a -=> Qc
+                    b -=> Qc
+            [ all Qc -> Aj ] +=> FDs
+            Qc' => Qc
+FDs is all function dependencies
