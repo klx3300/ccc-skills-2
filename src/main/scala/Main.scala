@@ -2,12 +2,12 @@ package FD
 
 import org.apache.spark.rdd.RDD._
 import org.apache.spark.{SparkConf, SparkContext}
+
 import scala.collection.mutable.Map
-import java.lang.Integer
 
 object Main {
   def main(args: Array[String]): Unit = {
-    val INPUT_PARTS = 10
+    val INPUT_PARTS = 16
     val conf = new SparkConf().setAppName("Functional Dependency")
       .set("spark.driver.maxResultSize", "0")
       .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
@@ -21,33 +21,46 @@ object Main {
     val outputFile = outputFolder
     val readInRDD = sc.textFile(inputFile, INPUT_PARTS).map(_.split(",")).cache()
     val attributesNums = readInRDD.first.length
-        println("Unique Attr Nums:")
-    val columnUniqueNums = 0.until(attributesNums).toList.map {
-      x => readInRDD.map(each => each(x)).distinct.count
+    //    println("Unique Attr Nums:")
+    val columnUniqueMap = 0.until(attributesNums).toList.map {
+      x =>
+        readInRDD
+          .map(each => each(x))
+          .distinct
+          .zipWithIndex
+          .map(x => (x._1, x._2.toInt))
+          .collectAsMap
     }
-        columnUniqueNums.foreach(
-          x => {
-            print(x)
-            print(" ")
-          }
-        )
-        println("\nUnique Attr Sorted:")
-    val columnSorted = columnUniqueNums.zipWithIndex.sortBy(x => -x._1).map(x => x._2)
-        columnSorted.foreach(
-          x => {
-            print(x)
-            print(" ")
-          }
-        )
-        println
+    //    columnUniqueNums.foreach(
+    //      x => {
+    //        print(x)
+    //        print(" ")
+    //      }
+    //    )
+    //    println("\nUnique Attr Sorted:")
+    val columnSorted = columnUniqueMap
+      .map(_.size)
+      .zipWithIndex
+      .sortBy(x => -x._1)
+      .map(x => x._2)
+    //    columnSorted.foreach(
+    //      x => {
+    //        print(x)
+    //        print(" ")
+    //      }
+    //    )
+    //    println
     val broadColumn = sc.broadcast(columnSorted)
     val space = new SearchSpaceTree(attributesNums)
     val logger = new LogAccumulator(0)
     for (i <- columnSorted.indices) {
       val broadSpace = sc.broadcast(space)
-      val lines = readInRDD.map {
-        arr => (hashWithPublicAttribs(arr, columnSorted(i)), arr)
-      }.partitionBy(new MyHashPartitioner(columnUniqueNums(columnSorted(i)).toInt)).cache()
+      val hashMap = columnUniqueMap(i)
+      val lines = readInRDD
+        .map {
+          arr => (hashMap(arr(i)), arr)
+        }.partitionBy(new MyHashPartitioner(hashMap.size))
+        .cache()
 
       val allLHSCombinators =
         Combinator.genRealFullCombinations(columnSorted.drop(i + 1).sorted)
@@ -70,7 +83,7 @@ object Main {
       broadSpace.unpersist()
       lines.unpersist()
       broadLHS.unpersist()
-      hashed = Map[String,Int]()
+      hashed = Map[String, Int]()
       curhashmax = 0
     }
     broadColumn.unpersist()
@@ -79,15 +92,16 @@ object Main {
     sc.parallelize(outputstrs, 1).saveAsTextFile(outputFile)
   }
 
-  var hashed = Map[String,Int]()
+  var hashed = Map[String, Int]()
   var curhashmax = 0
+
   def hashWithPublicAttribs(arr: Array[String], pubattrid: Int): Int = {
-    if(hashed.getOrElse(arr(pubattrid),-1) == -1){
-      hashed.put(arr(pubattrid),curhashmax)
+    if (hashed.getOrElse(arr(pubattrid), -1) == -1) {
+      hashed.put(arr(pubattrid), curhashmax)
       curhashmax = curhashmax + 1
       curhashmax - 1
-    }else{
-      hashed.getOrElse(arr(pubattrid),-1)
+    } else {
+      hashed.getOrElse(arr(pubattrid), -1)
     }
   }
 }
