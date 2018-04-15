@@ -2,6 +2,8 @@ package FD
 
 import org.apache.spark.rdd.RDD._
 import org.apache.spark.{SparkConf, SparkContext}
+import scala.collection.mutable.Map
+import java.lang.Integer
 
 object Main {
   def main(args: Array[String]): Unit = {
@@ -68,6 +70,8 @@ object Main {
       broadSpace.unpersist()
       lines.unpersist()
       broadLHS.unpersist()
+      hashed = Map[String,Int]()
+      curhashmax = 0
     }
     broadColumn.unpersist()
     val outputstrs = IOController.FDstoString(IOController.FDsShrink(space.toFDs))
@@ -75,7 +79,15 @@ object Main {
     sc.parallelize(outputstrs, 1).saveAsTextFile(outputFile)
   }
 
+  var hashed = Map[String,Int]()
+  var curhashmax = 0
   def hashWithPublicAttribs(arr: Array[String], pubattrid: Int): Int = {
-    arr(pubattrid).hashCode
+    if(hashed.getOrElse(arr(pubattrid),-1) == -1){
+      hashed.put(arr(pubattrid),curhashmax)
+      curhashmax = curhashmax + 1
+      curhashmax - 1
+    }else{
+      hashed.getOrElse(arr(pubattrid),-1)
+    }
   }
 }

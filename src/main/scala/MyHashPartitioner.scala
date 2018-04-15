@@ -6,7 +6,6 @@ class MyHashPartitioner[V](
   val numPartitions: Int = partitions
 
   def getPartition(key: Any): Int = {
-    val k = key.asInstanceOf[Int]
-    ((k % partitions) + partitions) % partitions
+    key.asInstanceOf[Int]
   }
 }
