@@ -3,11 +3,9 @@ package FD
 import org.apache.spark.rdd.RDD._
 import org.apache.spark.{SparkConf, SparkContext}
 
-import scala.collection.mutable.Map
-
 object Main {
   def main(args: Array[String]): Unit = {
-    val INPUT_PARTS = 16
+    val INPUT_PARTS = 576
     val conf = new SparkConf().setAppName("Functional Dependency")
       .set("spark.driver.maxResultSize", "0")
       .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
@@ -55,10 +53,10 @@ object Main {
     val logger = new LogAccumulator(0)
     for (i <- columnSorted.indices) {
       val broadSpace = sc.broadcast(space)
-      val hashMap = columnUniqueMap(i)
+      val hashMap = columnUniqueMap(columnSorted(i))
       val lines = readInRDD
         .map {
-          arr => (hashMap(arr(i)), arr)
+          arr => (hashMap(arr(columnSorted(i))), arr)
         }.partitionBy(new MyHashPartitioner(hashMap.size))
         .cache()
 
