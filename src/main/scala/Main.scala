@@ -62,13 +62,23 @@ object Main {
         }.partitionBy(new MyHashPartitioner(hashMap.size))
         .cache()
 
-      val allLHSCombinators =
+      val allLHSCombinations = // 2m45
         Combinator.genRealFullCombinations(columnSorted.drop(i + 1).sorted)
           .map { x =>
             (x :+ columnSorted(i))
               .sorted
           }
-      val broadLHS = sc.broadcast(allLHSCombinators)
+      /*val needlhsset = columnSorted.take(i+1).toSet // 2m51.019
+      val allLHSCombinations = space.vertices.toArray
+      .flatMap(x => {
+        val tmpset = x._1.toSet
+        if(x._2.toArray.map(x => x._2).reduce((x,y) => (x | y)) && needlhsset.subsetOf(tmpset)){
+          List[List[Int]](tmpset.diff(needlhsset).+(columnSorted(i)).toList.sorted).iterator
+        }else{
+          List[List[Int]]().iterator
+        }
+      }).toList*/
+      val broadLHS = sc.broadcast(allLHSCombinations)
       val mapped = lines.mapPartitionsWithIndex(
         (partindex, x) =>
           List[(ReversedSearchSpaceTree, LogAccumulator)]
@@ -83,8 +93,6 @@ object Main {
       broadSpace.unpersist()
       lines.unpersist()
       broadLHS.unpersist()
-      hashed = Map[String, Int]()
-      curhashmax = 0
     }
     broadColumn.unpersist()
     val outputstrs = IOController.FDstoString(IOController.FDsShrink(space.toFDs))
@@ -92,16 +100,4 @@ object Main {
     sc.parallelize(outputstrs, 1).saveAsTextFile(outputFile)
   }
 
-  var hashed = Map[String, Int]()
-  var curhashmax = 0
-
-  def hashWithPublicAttribs(arr: Array[String], pubattrid: Int): Int = {
-    if (hashed.getOrElse(arr(pubattrid), -1) == -1) {
-      hashed.put(arr(pubattrid), curhashmax)
-      curhashmax = curhashmax + 1
-      curhashmax - 1
-    } else {
-      hashed.getOrElse(arr(pubattrid), -1)
-    }
-  }
 }
