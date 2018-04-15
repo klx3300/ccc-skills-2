@@ -5,7 +5,7 @@ import org.apache.spark.{SparkConf, SparkContext}
 
 object Main {
   def main(args: Array[String]): Unit = {
-    val INPUT_PARTS = 576
+    val INPUT_PARTS = 10
     val conf = new SparkConf().setAppName("Functional Dependency")
       .set("spark.driver.maxResultSize", "0")
       .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
@@ -19,26 +19,25 @@ object Main {
     val outputFile = outputFolder
     val readInRDD = sc.textFile(inputFile, INPUT_PARTS).map(_.split(",")).cache()
     val attributesNums = readInRDD.first.length
-    //    println("Unique Attr Nums:")
+        println("Unique Attr Nums:")
     val columnUniqueNums = 0.until(attributesNums).toList.map {
-      x =>
-        readInRDD.map(each => each(x)).distinct.count
+      x => readInRDD.map(each => each(x)).distinct.count
     }
-    //    columnUniqueNums.foreach(
-    //      x => {
-    //        print(x)
-    //        print(" ")
-    //      }
-    //    )
-    //    println("\nUnique Attr Sorted:")
+        columnUniqueNums.foreach(
+          x => {
+            print(x)
+            print(" ")
+          }
+        )
+        println("\nUnique Attr Sorted:")
     val columnSorted = columnUniqueNums.zipWithIndex.sortBy(x => -x._1).map(x => x._2)
-    //    columnSorted.foreach(
-    //      x => {
-    //        print(x)
-    //        print(" ")
-    //      }
-    //    )
-    //    println
+        columnSorted.foreach(
+          x => {
+            print(x)
+            print(" ")
+          }
+        )
+        println
     val broadColumn = sc.broadcast(columnSorted)
     val space = new SearchSpaceTree(attributesNums)
     val logger = new LogAccumulator(0)
@@ -46,11 +45,19 @@ object Main {
       val broadSpace = sc.broadcast(space)
       val lines = readInRDD.map {
         arr => (hashWithPublicAttribs(arr, columnSorted(i)), arr)
-      }.partitionBy(new MyHashPartitioner(INPUT_PARTS)).cache()
+      }.partitionBy(new MyHashPartitioner(columnUniqueNums(columnSorted(i)).toInt)).cache()
+
+      val allLHSCombinators =
+        Combinator.genRealFullCombinations(columnSorted.drop(i + 1).sorted)
+          .map { x =>
+            (x :+ columnSorted(i))
+              .sorted
+          }
+      val broadLHS = sc.broadcast(allLHSCombinators)
       val mapped = lines.mapPartitionsWithIndex(
         (partindex, x) =>
           List[(ReversedSearchSpaceTree, LogAccumulator)]
-            (Validator.validatePartition(partindex, x.toList.map(x => x._2), broadSpace, i, broadColumn)).iterator)
+            (Validator.validatePartition(partindex, x.toList.map(x => x._2), broadSpace, i, broadColumn, broadLHS)).iterator)
       val result = mapped.reduce((x, y) => {
         x._1.merge(y._1)
         x._2.merge(y._2)
@@ -60,6 +67,7 @@ object Main {
       logger.merge(result._2)
       broadSpace.unpersist()
       lines.unpersist()
+      broadLHS.unpersist()
     }
     broadColumn.unpersist()
     val outputstrs = IOController.FDstoString(IOController.FDsShrink(space.toFDs))
