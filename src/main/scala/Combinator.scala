@@ -12,4 +12,7 @@ object Combinator {
   def genFullCombinations(attribs: List[Int]): List[List[Int]] = {
     1.until(attribs.length+1).flatMap(attribs.combinations).toList
   }
+  def genRealFullCombinations(attribs: List[Int]): List[List[Int]] = {
+    0.until(attribs.length+1).flatMap(attribs.combinations).toList
+  }
 }

@@ -1,8 +1,9 @@
 package FD
 
-import scala.collection.mutable.ListBuffer
 
 object IOController {
+
+  import scala.collection.mutable.ListBuffer
 
   def FDsShrink(fds: List[(List[Int], Int)]): scala.collection.mutable.Map[List[Int], List[Int]] = {
     val answer = scala.collection.mutable.Map[List[Int], List[Int]]()

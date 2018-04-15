@@ -1,10 +1,8 @@
 package FD
 
-import org.apache.spark.Partitioner
-
 class MyHashPartitioner[V](
                             partitions: Int
-                          ) extends Partitioner {
+                          ) extends org.apache.spark.Partitioner {
   val numPartitions: Int = partitions
 
   def getPartition(key: Any): Int = {

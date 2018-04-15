@@ -1,9 +1,8 @@
 package FD
 
-import scala.collection.mutable
-import scala.collection.mutable.ListBuffer
-
 class SearchSpaceTree(val attribcnt: Int) extends Serializable {
+  import scala.collection.mutable
+  import scala.collection.mutable.ListBuffer
   val vertices: mutable.Map[List[Int], mutable.Map[List[Int], Boolean]] = mutable.Map[List[Int], mutable.Map[List[Int], Boolean]]()
 
   def init(): Unit = {
@@ -36,9 +35,13 @@ class SearchSpaceTree(val attribcnt: Int) extends Serializable {
 
   init()
 
-  def merge(boomedlogs: mutable.HashSet[List[Int]]): Unit = {
-    for (x <- boomedlogs) {
-      vertices(x.dropRight(1))(x) = false
+  def merge(revtree:ReversedSearchSpaceTree):Unit={
+    for((lhs,rhsmap) <- revtree.vertices){
+      for((rhs,isboomed) <- rhsmap){
+        if(isboomed){
+          vertices(lhs)(rhs) = false
+        }
+      }
     }
   }
 

@@ -1,8 +1,8 @@
 package FD
 
-import scala.collection.mutable
 
-class ReversedSearchSpaceTree(val attribcnt: Int /*,val possibcombs:Map[List[Int],Boolean]*/) extends Serializable {
+class ReversedSearchSpaceTree(val attribcnt: Int)extends Serializable {
+  import scala.collection.mutable
   val vertices: mutable.Map[List[Int], mutable.Map[List[Int], Boolean]] = scala.collection.mutable.Map[List[Int], scala.collection.mutable.Map[List[Int], Boolean]]()
 
   def init(): Unit = {
