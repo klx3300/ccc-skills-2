@@ -25,6 +25,7 @@ class ReversedSearchSpaceTree(val attribcnt: Int)extends Serializable {
       val abuffer = x :+ rhs
       vertices(x)(abuffer) = true
     }
+    System.gc()
   }
 
   def merge(revtree: ReversedSearchSpaceTree): Unit = {
