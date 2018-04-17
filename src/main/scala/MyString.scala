@@ -16,6 +16,7 @@ class MyString extends Serializable {
         hcd
     }
     override def equals(another: Any): Boolean = {
-        another.asInstanceOf[MyString].hashCode() == hashCode()
+        // comparing by hash codes has potential collision bugs.
+        another.asInstanceOf[MyString].content.toList == content.toList
     }
 }
