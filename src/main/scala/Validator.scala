@@ -6,7 +6,7 @@ import scala.collection.mutable
 
 object Validator {
   def validatePartition(id: Int,
-                        dataset: List[Array[String]],
+                        dataset: List[Array[MyString]],
                         broadSpace: Broadcast[SearchSpaceTree],
                         publicAttributesID: Int,
                         broadColumn: Broadcast[List[Int]],

@@ -18,7 +18,11 @@ object Main {
     val tempFolder = args(2)
     val inputFile = inputFolder + "/bots_20m_15.csv"
     val outputFile = outputFolder
-    val readInRDD = sc.textFile(inputFile, INPUT_PARTS).map(_.split(","))
+    val readInRDD = sc.textFile(inputFile, INPUT_PARTS).map(_.split(",")).map(x => x.map(internal => {
+      val tmp = new MyString()
+      tmp.init(internal)
+      tmp
+    }))
     val attributesNums = readInRDD.first.length
     //    println("Unique Attr Nums:")
     val columnUniqueMap = 0.until(attributesNums).toList.map {
@@ -66,7 +70,7 @@ object Main {
             (x :+ columnSorted(i))
               .sorted
           }
-      val DROP_SIZE = 1024
+      val DROP_SIZE = 64
       while (allLHSCombinations.nonEmpty) {
         val someLHSCombinations = allLHSCombinations.takeRight(DROP_SIZE)
         allLHSCombinations = allLHSCombinations.dropRight(DROP_SIZE)
