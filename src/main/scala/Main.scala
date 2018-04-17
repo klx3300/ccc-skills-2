@@ -5,7 +5,7 @@ import org.apache.spark.{SparkConf, SparkContext}
 
 object Main {
   def main(args: Array[String]): Unit = {
-    val INPUT_PARTS = 576
+    val INPUT_PARTS = 16
     val conf = new SparkConf().setAppName("Functional Dependency")
       .set("spark.driver.maxResultSize", "0")
       .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
@@ -18,11 +18,7 @@ object Main {
     val tempFolder = args(2)
     val inputFile = inputFolder + "/bots_20m_15.csv"
     val outputFile = outputFolder
-    val readInRDD = sc.textFile(inputFile, INPUT_PARTS).map(_.split(",")).map(x => x.map(internal => {
-      val tmp = new MyString()
-      tmp.init(internal)
-      tmp
-    }))
+    val readInRDD = sc.textFile(inputFile, INPUT_PARTS).map(_.split(","))
     val attributesNums = readInRDD.first.length
     //    println("Unique Attr Nums:")
     val columnUniqueMap = 0.until(attributesNums).toList.map {
@@ -34,6 +30,8 @@ object Main {
           .map(x => (x._1, x._2.toInt))
           .collectAsMap
     }
+    val linespre = readInRDD.map(x => (for(index <- 0 until x.size) yield columnUniqueMap(index).getOrElse(x(index),-1)).toArray)
+
     //    columnUniqueNums.foreach(
     //      x => {
     //        print(x)
@@ -58,9 +56,9 @@ object Main {
     val logger = new LogAccumulator(0)
     for (i <- columnSorted.indices) {
       val hashMap = columnUniqueMap(columnSorted(i))
-      val lines = readInRDD
+      val lines = linespre
         .map {
-          arr => (hashMap(arr(columnSorted(i))), arr)
+          arr => (arr(columnSorted(i)), arr)
         }.partitionBy(new MyHashPartitioner(hashMap.size))
         .cache()
 
@@ -70,7 +68,7 @@ object Main {
             (x :+ columnSorted(i))
               .sorted
           }
-      val DROP_SIZE = 64
+      val DROP_SIZE = 1024
       while (allLHSCombinations.nonEmpty) {
         val someLHSCombinations = allLHSCombinations.takeRight(DROP_SIZE)
         allLHSCombinations = allLHSCombinations.dropRight(DROP_SIZE)
