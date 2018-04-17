@@ -1,10 +1,12 @@
 package FD
 
-import org.apache.spark.broadcast._
-
-import scala.collection.mutable
 
 object Validator {
+
+  import org.apache.spark.broadcast._
+
+  import scala.collection.mutable
+
   def validatePartition(id: Int,
                         dataset: List[Array[Int]],
                         broadSpace: Broadcast[SearchSpaceTree],

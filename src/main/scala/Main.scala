@@ -1,9 +1,11 @@
 package FD
 
-import org.apache.spark.rdd.RDD._
-import org.apache.spark.{SparkConf, SparkContext}
 
 object Main {
+
+  import org.apache.spark.rdd.RDD._
+  import org.apache.spark.{SparkConf, SparkContext}
+
   def main(args: Array[String]): Unit = {
     val INPUT_PARTS = 16
     val conf = new SparkConf().setAppName("Functional Dependency")
@@ -30,7 +32,14 @@ object Main {
           .map(x => (x._1, x._2.toInt))
           .collectAsMap
     }
-    val linespre = readInRDD.map(x => (for(index <- 0 until x.size) yield columnUniqueMap(index).getOrElse(x(index),-1)).toArray)
+    val broadMap = sc.broadcast(columnUniqueMap)
+    val linespre = readInRDD.map {
+      x =>
+        x.indices.map(
+          index => broadMap.value(index).getOrElse(x(index), -1)
+        ).toArray
+    }
+
 
     //    columnUniqueNums.foreach(
     //      x => {
@@ -86,13 +95,23 @@ object Main {
         val broadLHS = sc.broadcast(someLHSCombinations)
         val mapped = lines.mapPartitionsWithIndex(
           (partindex, x) =>
-            List[(ReversedSearchSpaceTree, LogAccumulator)]
-              (Validator.validatePartition(partindex, x.toList.map(x => x._2), broadSpace, i, broadColumn, broadLHS)).iterator)
-        val result = mapped.reduce((x, y) => {
-          x._1.merge(y._1)
-          x._2.merge(y._2)
-          x
-        })
+            List[(ReversedSearchSpaceTree, LogAccumulator)](
+              Validator.validatePartition(
+                partindex,
+                x.toList.map(x => x._2),
+                broadSpace,
+                i,
+                broadColumn,
+                broadLHS)
+            ).iterator
+        )
+        val result = mapped.reduce {
+          (x, y) => {
+            x._1.merge(y._1)
+            x._2.merge(y._2)
+            x
+          }
+        }
         space.merge(result._1)
         logger.merge(result._2)
         broadSpace.unpersist()

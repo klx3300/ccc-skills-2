@@ -1,8 +1,10 @@
 package FD
 
 
-class ReversedSearchSpaceTree(val attribcnt: Int)extends Serializable {
+class ReversedSearchSpaceTree(val attribcnt: Int) extends Serializable {
+
   import scala.collection.mutable
+
   val vertices: mutable.Map[List[Int], mutable.Map[List[Int], Boolean]] = scala.collection.mutable.Map[List[Int], scala.collection.mutable.Map[List[Int], Boolean]]()
 
   def init(): Unit = {
@@ -25,7 +27,6 @@ class ReversedSearchSpaceTree(val attribcnt: Int)extends Serializable {
       val abuffer = x :+ rhs
       vertices(x)(abuffer) = true
     }
-    System.gc()
   }
 
   def merge(revtree: ReversedSearchSpaceTree): Unit = {
