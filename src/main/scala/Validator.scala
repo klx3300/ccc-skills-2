@@ -19,9 +19,10 @@ object Validator {
     val logger = new LogAccumulator(id)
     for(lhs <- broadLHS.value){
       val lhsset = lhs.toSet
-      for(tryrhs <- (0 until broadSpace.value.attribcnt).filterNot(x => lhsset.contains(x))){
+      val filteredrhs = (0 until broadSpace.value.attribcnt).filterNot(x => lhsset.contains(x))
+      for(tryrhs <- filteredrhs){
         if(broadSpace.value.shouldValidate(lhs,tryrhs)){
-          val rhs = lhs+:tryrhs
+          val rhs = lhs.+:(tryrhs)
           val lhsequvcnt = Equivalencer.getEquivalenceCounts(lhs, dataset)
           val rhsequvcnt = Equivalencer.getEquivalenceCounts(rhs, dataset)
           if(lhsequvcnt != rhsequvcnt){

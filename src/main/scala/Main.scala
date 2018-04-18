@@ -1,12 +1,10 @@
 package FD
 
 import scala.collection.mutable.Map
+import org.apache.spark.rdd.RDD._
+import org.apache.spark.{SparkConf, SparkContext}
 
 object Main {
-
-  import org.apache.spark.rdd.RDD._
-  import org.apache.spark.{SparkConf, SparkContext}
-
   def main(args: Array[String]): Unit = {
     val INPUT_PARTS = 16
     val conf = new SparkConf().setAppName("Functional Dependency")
@@ -23,96 +21,35 @@ object Main {
     val outputFile = outputFolder
     val readInRDD = sc.textFile(inputFile, INPUT_PARTS).map(_.split(","))
     val attributesNums = readInRDD.first.length
-    //    println("Unique Attr Nums:")
     val columnUniqueMap = 0.until(attributesNums).toList.map {
-      x =>
-        readInRDD
-          .map(each => each(x))
-          .distinct
-          .zipWithIndex
-          .map(x => (x._1, x._2.toInt))
-          .collectAsMap
+      x => readInRDD .map(each => each(x)) .distinct .zipWithIndex .map(x => (x._1, x._2.toInt)) .collectAsMap
     }
     val broadMap = sc.broadcast(columnUniqueMap)
     val linespre = readInRDD.map {
-      x =>
-        x.indices.map(
-          index => broadMap.value(index).getOrElse(x(index), -1)
-        ).toArray
+      x => x.indices.map( index => broadMap.value(index).getOrElse(x(index), -1)).toArray
     }
-
-
-    //    columnUniqueNums.foreach(
-    //      x => {
-    //        print(x)
-    //        print(" ")
-    //      }
-    //    )
-    //    println("\nUnique Attr Sorted:")
-    val columnSorted = columnUniqueMap
-      .map(_.size)
-      .zipWithIndex
-      .sortBy(x => x._1)
-      .map(x => x._2)
-    //    columnSorted.foreach(
-    //      x => {
-    //        print(x)
-    //        print(" ")
-    //      }
-    //    )
-    //    println
+    val columnSorted = columnUniqueMap .map(_.size) .zipWithIndex .sortBy(x => x._1) .map(x => x._2)
     val broadColumn = sc.broadcast(columnSorted)
     val space = new LazySearchSpaceTree(attributesNums)
     val logger = new LogAccumulator(0)
     for (i <- columnSorted.indices) {
       val hashMap = columnUniqueMap(columnSorted(i))
-      val lines = linespre
-        .map {
-          arr => (arr(columnSorted(i)), arr)
-        }.partitionBy(new MyHashPartitioner(hashMap.size))
-        .cache()
-
+      val lines = linespre .map { arr => (arr(columnSorted(i)), arr) }.partitionBy(new MyHashPartitioner(hashMap.size)).cache()
       var allLHSCombinations = // 2m45
-        Combinator.genRealFullCombinations(columnSorted.drop(i + 1).sorted)
-          .map { x =>
-            (x :+ columnSorted(i))
-              .sorted
-          }
+        Combinator.genRealFullCombinations(columnSorted.drop(i + 1).sorted) .map { x => (x :+ columnSorted(i)) .sorted }
       val DROP_SIZE = 1024
       while (allLHSCombinations.nonEmpty) {
         val someLHSCombinations = allLHSCombinations.takeRight(DROP_SIZE)
         allLHSCombinations = allLHSCombinations.dropRight(DROP_SIZE)
         val broadSpace = sc.broadcast(space)
-        /*val needlhsset = columnSorted.take(i+1).toSet // 2m51.019
-        val allLHSCombinations = space.vertices.toArray
-        .flatMap(x => {
-          val tmpset = x._1.toSet
-          if(x._2.toArray.map(x => x._2).reduce((x,y) => (x | y)) && needlhsset.subsetOf(tmpset)){
-            List[List[Int]](tmpset.diff(needlhsset).+(columnSorted(i)).toList.sorted).iterator
-          }else{
-            List[List[Int]]().iterator
-          }
-        }).toList*/
         val broadLHS = sc.broadcast(someLHSCombinations)
-        val mapped = lines.mapPartitionsWithIndex(
-          (partindex, x) =>
-            List[(Map[(List[Int],Int),Boolean], LogAccumulator)](
-              Validator.validatePartition(
-                partindex,
-                x.toList.map(x => x._2),
-                broadSpace,
-                i,
-                broadColumn,
-                broadLHS)
-            ).iterator
-        )
+        val mapped = lines.mapPartitionsWithIndex( (partindex, x) => List[(Map[(List[Int],Int),Boolean], LogAccumulator)](
+              Validator.validatePartition( partindex, x.toList.map(x => x._2), broadSpace, i, broadColumn, broadLHS)).iterator)
         val result = mapped.reduce {
-          (x, y) => {
-            // first, merge map
+          (x, y) => { 
             for((lrcomb,status) <- y._1){
               if(status == false){
                 x._1(lrcomb) = false
-                // other cases, no change.
               }
             }
             x._2.merge(y._2)
@@ -125,12 +62,10 @@ object Main {
         broadLHS.unpersist()
       }
       lines.unpersist()
-
     }
     broadColumn.unpersist()
     val outputstrs = IOController.FDstoString(IOController.FDsShrink(space.toFDs))
     logger.printlogs()
     sc.parallelize(outputstrs, 1).saveAsTextFile(outputFile)
   }
-
 }
