@@ -36,12 +36,26 @@ class LazySearchSpaceTree(val attribcnt:Int) extends Serializable {
         for((vlhs,vstatus) <- validatedlhs){
             val vlhsset = vlhs.toSet
             if(status){
-                if(vlhsset.subsetOf(lhsset)){
+                if(lhsset.subsetOf(vlhsset) && (vstatus == true)){
                     updated.remove(vlhs)
                 }
             }else{
-                if(lhsset.subsetOf(vlhsset)){
+                if(vlhsset.subsetOf(lhsset) && (vstatus == false)){
                     updated.remove(vlhs)
+                }
+            }
+        }
+        for((vlhs,status) <- updated){
+            val vlhsset = vlhs.toSet
+            if(status){
+                if(vlhsset.subsetOf(lhsset)){
+                    vertices(rhs) = updated
+                    return
+                }
+            }else{
+                if(lhsset.subsetOf(vlhsset)){
+                    vertices(rhs) = updated
+                    return
                 }
             }
         }
