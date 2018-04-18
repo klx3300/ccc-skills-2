@@ -1,5 +1,6 @@
 package FD
 
+import scala.collection.mutable.Map
 
 object Main {
 
@@ -61,7 +62,7 @@ object Main {
     //    )
     //    println
     val broadColumn = sc.broadcast(columnSorted)
-    val space = new SearchSpaceTree(attributesNums)
+    val space = new LazySearchSpaceTree(attributesNums)
     val logger = new LogAccumulator(0)
     for (i <- columnSorted.indices) {
       val hashMap = columnUniqueMap(columnSorted(i))
@@ -95,7 +96,7 @@ object Main {
         val broadLHS = sc.broadcast(someLHSCombinations)
         val mapped = lines.mapPartitionsWithIndex(
           (partindex, x) =>
-            List[(ReversedSearchSpaceTree, LogAccumulator)](
+            List[(Map[(List[Int],Int),Boolean], LogAccumulator)](
               Validator.validatePartition(
                 partindex,
                 x.toList.map(x => x._2),
@@ -107,7 +108,13 @@ object Main {
         )
         val result = mapped.reduce {
           (x, y) => {
-            x._1.merge(y._1)
+            // first, merge map
+            for((lrcomb,status) <- y._1){
+              if(status == false){
+                x._1(lrcomb) = false
+                // other cases, no change.
+              }
+            }
             x._2.merge(y._2)
             x
           }
