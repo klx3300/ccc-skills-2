@@ -14,8 +14,6 @@ object Main {
     val outputFolder = args(1)
     val tempFolder = args(2)
     val conf = new SparkConf().setAppName("Functional Dependency Discovery")
-      .set("spark.local.dir", tempFolder)
-      .set("spark.driver.maxResultSize", "0")
       /*
       .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .set("spark.kryoserializer.buffer.max", "2047m")
