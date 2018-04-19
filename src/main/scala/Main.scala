@@ -14,11 +14,10 @@ object Main {
     val outputFolder = args(1)
     val tempFolder = args(2)
     val conf = new SparkConf().setAppName("Functional Dependency Discovery")
-      /*
       .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .set("spark.kryoserializer.buffer.max", "2047m")
       .set("spark.executor.extraJavaOptions", "-XX:ThreadStackSize=2048 -XX:+UseCompressedOops -XX:+UseParNewGC -XX:+CMSParallelRemarkEnabled -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75")
-      .registerKryoClasses(Array(classOf[SearchSpaceTree], classOf[ReversedSearchSpaceTree]))*/
+      .registerKryoClasses(Array(classOf[LazySearchSpaceTree]))
     val sc = new SparkContext(conf)
     val inputFile = inputFolder
     val outputFile = outputFolder
