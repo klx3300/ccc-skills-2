@@ -2,6 +2,7 @@ package FD
 
 import scala.collection.mutable.Map
 import org.apache.spark.rdd.RDD._
+import org.apache.spark.storage.StorageLevel
 import org.apache.spark.{SparkConf, SparkContext}
 import scala.util.control.Breaks._
 import scala.collection.mutable.ListBuffer
@@ -9,16 +10,18 @@ import scala.collection.mutable.ListBuffer
 object Main {
   def main(args: Array[String]): Unit = {
     val INPUT_PARTS = 576
-    val conf = new SparkConf().setAppName("Functional Dependency Discovery")
-      .set("spark.driver.maxResultSize", "0")
-      .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-      .set("spark.kryoserializer.buffer.max", "2047m")
-      .set("spark.executor.extraJavaOptions", "-XX:ThreadStackSize=2048 -XX:+UseCompressedOops -XX:+UseParNewGC -XX:+CMSParallelRemarkEnabled -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75")
-      .registerKryoClasses(Array(classOf[SearchSpaceTree], classOf[ReversedSearchSpaceTree]))
-    val sc = new SparkContext(conf)
     val inputFolder = args(0)
     val outputFolder = args(1)
     val tempFolder = args(2)
+    val conf = new SparkConf().setAppName("Functional Dependency Discovery")
+      .set("spark.local.dir", tempFolder)
+      .set("spark.driver.maxResultSize", "0")
+      /*
+      .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+      .set("spark.kryoserializer.buffer.max", "2047m")
+      .set("spark.executor.extraJavaOptions", "-XX:ThreadStackSize=2048 -XX:+UseCompressedOops -XX:+UseParNewGC -XX:+CMSParallelRemarkEnabled -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75")
+      .registerKryoClasses(Array(classOf[SearchSpaceTree], classOf[ReversedSearchSpaceTree]))*/
+    val sc = new SparkContext(conf)
     val inputFile = inputFolder
     val outputFile = outputFolder
     val readInRDD = sc.textFile(inputFile, INPUT_PARTS).map(_.split(","))
@@ -29,7 +32,7 @@ object Main {
     val broadMap = sc.broadcast(columnUniqueMap)
     val linespre = readInRDD.map {
       x => x.indices.map( index => broadMap.value(index).getOrElse(x(index), -1)).toArray
-    }
+    }.persist(StorageLevel.MEMORY_AND_DISK)
     val columnSorted = columnUniqueMap .map(_.size) .zipWithIndex .sortBy(x => x._1) .map(x => x._2)
     val broadColumn = sc.broadcast(columnSorted)
     val space = new LazySearchSpaceTree(attributesNums)
@@ -121,9 +124,6 @@ object Main {
       lines.unpersist()
     }
     broadColumn.unpersist()
-    for((x,y) <- space.toFDs){
-      println("Log:" + x.toString + " => " + y.toString)
-    }
     val outputstrs = IOController.FDstoString(IOController.FDsShrink(space.toFDs))
     logger.printlogs()
     sc.parallelize(outputstrs, 1).saveAsTextFile(outputFile)
