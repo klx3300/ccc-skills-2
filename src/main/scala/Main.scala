@@ -9,7 +9,7 @@ import scala.collection.mutable.ListBuffer
 object Main {
   def main(args: Array[String]): Unit = {
     val INPUT_PARTS = 16
-    val conf = new SparkConf().setAppName("Functional Dependency")
+    val conf = new SparkConf().setAppName("我们就跑一次迭代看看效果")
       .set("spark.driver.maxResultSize", "0")
       .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .set("spark.kryoserializer.buffer.max", "2047m")
@@ -35,7 +35,7 @@ object Main {
     val space = new LazySearchSpaceTree(attributesNums)
     val logger = new LogAccumulator(0)
     var awaits = ListBuffer[List[Int]]()
-    val VALIDATE_THRESHOLD = 32
+    val VALIDATE_THRESHOLD = 128
     for(curpubattr <- 0 until attributesNums){
       // init works for this attr!
       val hashMap = columnUniqueMap(curpubattr)

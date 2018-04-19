@@ -7,34 +7,14 @@ object IOController {
 
   def FDsShrink(fds: List[(List[Int], Int)]): scala.collection.mutable.Map[List[Int], List[Int]] = {
     val answer = scala.collection.mutable.Map[List[Int], List[Int]]()
-    var lastlhs = List[Int]()
-    var each = ListBuffer[Int]()
-    for ((lhs, rhs) <- fds) {
-      if (lhs != lastlhs) {
-        each = ListBuffer[Int]()
-      }
-      lastlhs = lhs
-      val attribs = Combinator.genCombinations(lhs)
-      var isexist = false
-      for (attrib <- attribs) {
-        val exist = answer.get(attrib)
-        exist match {
-          case Some(lastrhs) => {
-            if (lastrhs.contains(rhs)) {
-              isexist = true
-            }
-          }
-          case None => None
-        }
-      }
-      if (!isexist) {
-        each += rhs
-      }
-      if (each.size > 0) {
-        answer(lhs) = each.sorted.toList
+    for(eachfd <- fds){
+      if(answer.contains(eachfd._1)){
+        answer(eachfd._1) = answer(eachfd._1).:+(eachfd._2)
+      }else{
+        answer(eachfd._1) = List[Int](eachfd._2)
       }
     }
-    answer
+    answer.map(x => (x._1.sorted,x._2.sorted))
   }
 
   def FDstoString(fds: scala.collection.mutable.Map[List[Int], List[Int]]): List[String] = {
