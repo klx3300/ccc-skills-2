@@ -9,7 +9,7 @@ import scala.collection.mutable.ListBuffer
 object Main {
   def main(args: Array[String]): Unit = {
     val INPUT_PARTS = 576
-    val conf = new SparkConf().setAppName("我们就跑一次迭代看看效果")
+    val conf = new SparkConf().setAppName("Functional Dependency Discovery")
       .set("spark.driver.maxResultSize", "0")
       .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .set("spark.kryoserializer.buffer.max", "2047m")
