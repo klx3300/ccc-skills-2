@@ -34,14 +34,14 @@ object Main {
     val broadColumn = sc.broadcast(columnSorted)
     val space = new LazySearchSpaceTree(attributesNums)
     val logger = new LogAccumulator(0)
-    var awaits = ListBuffer[List[Int]]()
+    var awaits = ListBuffer[(List[Int],Int)]()
     val VALIDATE_THRESHOLD = 128
     for(curpubattr <- 0 until attributesNums){
       // init works for this attr!
       val hashMap = columnUniqueMap(curpubattr)
       val lines = linespre.map(arr => (arr(curpubattr),arr))
       .partitionBy(new MyHashPartitioner(hashMap.size)).cache()
-      awaits.append(List[Int](curpubattr))
+      appender(awaits,List[Int](curpubattr),space)
       val curmaxid = attributesNums - curpubattr - 1
       for(currcnt <- 1 until curmaxid + 1){
         val bottombuffer = new ListBuffer[Int]()
@@ -50,7 +50,7 @@ object Main {
         }
         val anoresult = bottombuffer.map(x => x+curpubattr+1)
         anoresult.prepend(curpubattr)
-        awaits.append(anoresult.toList)
+        appender(awaits,anoresult.toList,space)
         while(bottombuffer(0)<curmaxid-currcnt){ // EX condition: the largest r-comb in dict order
           breakable{
             for(operpos <- (currcnt-1).to(0,-1)){
@@ -62,7 +62,7 @@ object Main {
                 }
                 val trueresult = bottombuffer.map(x => x+curpubattr+1)
                 trueresult.prepend(curpubattr)
-                awaits.append(trueresult.toList)
+                appender(awaits,trueresult.toList,space)
                 if(awaits.size >= VALIDATE_THRESHOLD){
                   // start validation
                   val tovalidlhs = awaits.toList
@@ -87,7 +87,7 @@ object Main {
                   logger.merge(result._2)
                   broadSpace.unpersist
                   broadLHS.unpersist
-                  awaits = ListBuffer[List[Int]]()
+                  awaits = ListBuffer[(List[Int],Int)]()
                 }
                 break
               }
@@ -117,7 +117,7 @@ object Main {
       logger.merge(result._2)
       broadSpace.unpersist
       broadLHS.unpersist
-      awaits = ListBuffer[List[Int]]()
+      awaits = ListBuffer[(List[Int],Int)]()
       lines.unpersist()
     }
     broadColumn.unpersist()
@@ -127,5 +127,14 @@ object Main {
     val outputstrs = IOController.FDstoString(IOController.FDsShrink(space.toFDs))
     logger.printlogs()
     sc.parallelize(outputstrs, 1).saveAsTextFile(outputFile)
+  }
+  def appender(awaits: ListBuffer[(List[Int],Int)], lhs: List[Int], space: LazySearchSpaceTree):Unit = {
+    val lhsset = lhs.toSet
+    val filteredrhs = (0 until space.attribcnt).filterNot(x => lhsset.contains(x))
+    for(tryrhs <- filteredrhs){
+      if(space.shouldValidate(lhs,tryrhs)){
+        awaits.append((lhs,tryrhs))
+      }
+    }
   }
 }

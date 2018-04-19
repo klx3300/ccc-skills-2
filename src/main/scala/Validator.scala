@@ -12,25 +12,19 @@ object Validator {
                         broadSpace: Broadcast[LazySearchSpaceTree],
                         publicAttributesID: Int,
                         broadColumn: Broadcast[List[Int]],
-                        broadLHS: Broadcast[List[List[Int]]]
+                        broadLHS: Broadcast[List[(List[Int],Int)]]
                        )
   : (Map[(List[Int],Int),Boolean], LogAccumulator) = {
     val statusmap = Map[(List[Int],Int),Boolean]()
     val logger = new LogAccumulator(id)
     for(lhs <- broadLHS.value){
-      val lhsset = lhs.toSet
-      val filteredrhs = (0 until broadSpace.value.attribcnt).filterNot(x => lhsset.contains(x))
-      for(tryrhs <- filteredrhs){
-        if(broadSpace.value.shouldValidate(lhs,tryrhs)){
-          val rhs = lhs.+:(tryrhs)
-          val lhsequvcnt = Equivalencer.getEquivalenceCounts(lhs, dataset)
-          val rhsequvcnt = Equivalencer.getEquivalenceCounts(rhs, dataset)
-          if(lhsequvcnt != rhsequvcnt){
-            statusmap((lhs,tryrhs)) = false
-          }else{
-            statusmap((lhs,tryrhs)) = true
-          }
-        }
+      val rhs = lhs._1.+:(lhs._2)
+      val lhsequvcnt = Equivalencer.getEquivalenceCounts(lhs._1, dataset)
+      val rhsequvcnt = Equivalencer.getEquivalenceCounts(rhs, dataset)
+      if(lhsequvcnt != rhsequvcnt){
+        statusmap((lhs._1,lhs._2)) = false
+      }else{
+        statusmap((lhs._1,lhs._2)) = true
       }
     }
 /*
