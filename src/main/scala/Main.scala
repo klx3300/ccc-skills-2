@@ -8,7 +8,7 @@ import scala.collection.mutable.ListBuffer
 
 object Main {
   def main(args: Array[String]): Unit = {
-    val INPUT_PARTS = 16
+    val INPUT_PARTS = 576
     val conf = new SparkConf().setAppName("我们就跑一次迭代看看效果")
       .set("spark.driver.maxResultSize", "0")
       .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
@@ -19,7 +19,7 @@ object Main {
     val inputFolder = args(0)
     val outputFolder = args(1)
     val tempFolder = args(2)
-    val inputFile = inputFolder + "/bots_20m_15.csv"
+    val inputFile = inputFolder
     val outputFile = outputFolder
     val readInRDD = sc.textFile(inputFile, INPUT_PARTS).map(_.split(","))
     val attributesNums = readInRDD.first.length
